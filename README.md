@@ -37,7 +37,7 @@
 | Taxonomy push and seller product import | ✔ |
 | GraphQL fields on `ProductInterface` | ✔ |
 
-Watch [releases](https://github.com/mercurjs/mercur/releases) of this repo to get notified of updates.
+Watch [Mercur releases](https://github.com/mercurjs/mercur/releases) to get notified of updates.
 
 ## Overview
 
