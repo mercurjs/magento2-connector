@@ -1,16 +1,8 @@
-<br />
+<a href="https://mercurjs.com">
+  <img alt="Mercur Magento 2 Connector" src=".github/banner.svg" width="100%">
+</a>
+
 <p align="center">
-  <a href="https://mercurjs.com">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mercurjs/mercur/main/apps/docs/logo_dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mercurjs/mercur/main/apps/docs/logo.svg">
-      <img alt="Mercur" width="160" src="https://raw.githubusercontent.com/mercurjs/mercur/main/apps/docs/logo.svg">
-    </picture>
-  </a>
-
-  <h1 align="center">Mercur Magento 2 Connector</h1>
-
-  <p align="center">
     Sell marketplace offers from your Magento 2 store, next to your own products.
     <br />
     <a href="https://docs.mercurjs.com">Documentation</a>
@@ -19,7 +11,6 @@
     ·
     <a href="https://github.com/mercurjs/mercur/issues/new?template=bug_report.md">Report Bugs</a>
     <br />
-  </p>
 </p>
 
 ## Status
