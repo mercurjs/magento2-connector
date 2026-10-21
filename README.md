@@ -37,7 +37,7 @@
 | Taxonomy push and seller product import | ✔ |
 | GraphQL fields on `ProductInterface` | ✔ |
 
-Watch [releases](https://github.com/mercurjs/magento2-connector/releases) of this repo to get notified of updates.
+Watch [releases](https://github.com/mercurjs/mercur/releases) of this repo to get notified of updates.
 
 ## Overview
 
