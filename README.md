@@ -17,7 +17,7 @@
     ·
     <a href="https://github.com/mercurjs/mercur/issues/new?template=feature_request.md">Request Features</a>
     ·
-    <a href="https://github.com/mercurjs/magento2-connector/issues/new?labels=bug">Report Bugs</a>
+    <a href="https://github.com/mercurjs/mercur/issues/new?template=bug_report.md">Report Bugs</a>
     <br />
   </p>
 </p>
