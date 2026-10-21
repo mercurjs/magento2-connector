@@ -24,7 +24,7 @@
 
 ## Status
 
-[![License](https://img.shields.io/github/license/mercurjs/magento2-connector)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/mercurjs/magento2-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/mercurjs/magento2-connector/actions/workflows/ci.yml)
 
 | Features | Status |
