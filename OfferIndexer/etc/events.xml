@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="mercur_offers_imported">
+        <observer name="mercur_offer_indexer_reindex" instance="Mercur\OfferIndexer\Observer\ReindexAfterImport"/>
+    </event>
+    <event name="catalog_product_save_after">
+        <observer name="mercur_offer_indexer_product_save" instance="Mercur\OfferIndexer\Observer\ReindexAfterProductSave"/>
+    </event>
+</config>

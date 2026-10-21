@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mercur_offer_product_index" resource="default" engine="innodb" comment="Best offer per SKU and website">
+        <column xsi:type="varchar" name="product_sku" nullable="false" length="64" comment="SKU"/>
+        <column xsi:type="smallint" name="website_id" unsigned="true" nullable="false" comment="Website"/>
+        <column xsi:type="varchar" name="best_offer_id" nullable="true" length="64" comment="Best offer ID, null when the operator wins"/>
+        <column xsi:type="varchar" name="best_seller_id" nullable="true" length="64" comment="Best seller ID"/>
+        <column xsi:type="decimal" name="best_price" scale="4" precision="20" nullable="true" comment="Best price"/>
+        <column xsi:type="decimal" name="min_price" scale="4" precision="20" nullable="true" comment="Min price"/>
+        <column xsi:type="decimal" name="max_price" scale="4" precision="20" nullable="true" comment="Max price"/>
+        <column xsi:type="int" name="offer_count" unsigned="true" nullable="false" default="0" comment="Active offers"/>
+        <column xsi:type="boolean" name="operator_available" nullable="false" default="false" comment="Operator stock available"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="product_sku"/>
+            <column name="website_id"/>
+        </constraint>
+    </table>
+</schema>

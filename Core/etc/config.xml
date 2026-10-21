@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mercur>
+            <general>
+                <enabled>0</enabled>
+                <api_url>http://localhost:9000</api_url>
+                <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <publishable_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <sales_channel_id/>
+                <region_id/>
+                <channel>magento</channel>
+                <timeout>15</timeout>
+            </general>
+            <offers>
+                <best_offer_rule>lowest_total_price</best_offer_rule>
+                <operator_label>Sold by us</operator_label>
+            </offers>
+            <webhook>
+                <secret backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+            </webhook>
+            <sync>
+                <sellers_cron>*/15 * * * *</sellers_cron>
+                <offers_cron>*/5 * * * *</offers_cron>
+                <products_cron>0 * * * *</products_cron>
+                <full_cron>0 2 * * *</full_cron>
+                <page_size>100</page_size>
+            </sync>
+        </mercur>
+    </default>
+</config>

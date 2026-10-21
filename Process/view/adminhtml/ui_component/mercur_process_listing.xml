@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mercur_process_listing.mercur_process_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>mercur_process_columns</spinner>
+        <deps>
+            <dep>mercur_process_listing.mercur_process_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="mercur_process_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Mercur_Core::process</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="mercur_process_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="mercur_process_columns">
+        <settings>
+            <editorConfig>
+                <param name="indexField" xsi:type="string">id</param>
+            </editorConfig>
+        </settings>
+        <column name="id" sortOrder="10">
+            <settings>
+                <filter>textRange</filter>
+                <sorting>desc</sorting>
+                <label translate="true">ID</label>
+            </settings>
+        </column>
+        <column name="code" sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Task</label>
+            </settings>
+        </column>
+        <column name="name" sortOrder="30">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Name</label>
+            </settings>
+        </column>
+        <column name="status" sortOrder="40">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="duration" sortOrder="50">
+            <settings>
+                <label translate="true">Duration (s)</label>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date" sortOrder="60">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created</label>
+            </settings>
+        </column>
+        <column name="output" sortOrder="70">
+            <settings>
+                <label translate="true">Output</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+    </columns>
+</listing>

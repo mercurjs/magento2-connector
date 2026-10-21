@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="mercur_sync_sellers" instance="Mercur\Connector\Cron\Enqueue" method="sellers">
+            <config_path>mercur/sync/sellers_cron</config_path>
+        </job>
+        <job name="mercur_sync_offers" instance="Mercur\Connector\Cron\Enqueue" method="offers">
+            <config_path>mercur/sync/offers_cron</config_path>
+        </job>
+        <job name="mercur_sync_products" instance="Mercur\Connector\Cron\Enqueue" method="products">
+            <config_path>mercur/sync/products_cron</config_path>
+        </job>
+        <job name="mercur_sync_full" instance="Mercur\Connector\Cron\Enqueue" method="full">
+            <config_path>mercur/sync/full_cron</config_path>
+        </job>
+    </group>
+</config>

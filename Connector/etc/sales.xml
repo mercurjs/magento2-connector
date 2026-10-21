@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/sales.xsd">
+    <section name="quote">
+        <group name="totals">
+            <item name="mercur_shipping" instance="Mercur\Connector\Model\Total\MarketplaceShipping" sort_order="260">
+                <renderer name="adminhtml" instance="Magento\Sales\Block\Adminhtml\Order\Create\Totals\DefaultTotals"/>
+                <renderer name="frontend" instance="Magento\Checkout\Block\Cart\Totals\DefaultTotals"/>
+            </item>
+        </group>
+    </section>
+</config>

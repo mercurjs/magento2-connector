@@ -1,0 +1,28 @@
+interface ProductInterface {
+    mercur_offers: [MercurOffer] @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\ProductOffers") @doc(description: "Marketplace offers for this product, cheapest first.")
+    mercur_buy_box: MercurBuyBox @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\ProductBuyBox") @doc(description: "Best way to buy this product across the operator's stock and seller offers.")
+}
+
+type MercurOffer @doc(description: "A seller's offer against a product.") {
+    id: String!
+    seller_id: String!
+    seller_name: String
+    seller_premium: Boolean
+    price: Float!
+    origin_price: Float
+    currency_code: String
+    quantity: Int
+    leadtime_to_ship: Int
+    condition_code: String
+    is_best: Boolean!
+}
+
+type MercurBuyBox {
+    best_offer_id: String
+    best_seller_id: String
+    best_price: Float
+    min_price: Float
+    max_price: Float
+    offer_count: Int!
+    operator_available: Boolean!
+}

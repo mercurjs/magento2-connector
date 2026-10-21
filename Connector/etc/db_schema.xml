@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mercur_seller" resource="default" engine="innodb" comment="Mercur Seller">
+        <column xsi:type="varchar" name="seller_id" nullable="false" length="64" comment="Mercur seller ID"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Name"/>
+        <column xsi:type="varchar" name="handle" nullable="false" length="255" comment="Handle"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="32" comment="Status"/>
+        <column xsi:type="boolean" name="premium" nullable="false" default="false" comment="Premium"/>
+        <column xsi:type="smallint" name="default_leadtime_to_ship" unsigned="true" nullable="true" comment="Default lead time"/>
+        <column xsi:type="timestamp" name="closed_from" nullable="true" comment="Closed from"/>
+        <column xsi:type="timestamp" name="closed_to" nullable="true" comment="Closed to"/>
+        <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+        <column xsi:type="varchar" name="logo" nullable="true" length="2048" comment="Logo URL"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="true" comment="Mercur updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="seller_id"/>
+        </constraint>
+        <index referenceId="MERCUR_SELLER_HANDLE" indexType="btree">
+            <column name="handle"/>
+        </index>
+    </table>
+    <table name="mercur_offer" resource="default" engine="innodb" comment="Mercur Offer">
+        <column xsi:type="varchar" name="offer_id" nullable="false" length="64" comment="Mercur offer ID"/>
+        <column xsi:type="varchar" name="product_sku" nullable="false" length="64" comment="Magento SKU"/>
+        <column xsi:type="varchar" name="seller_sku" nullable="false" length="255" comment="Seller SKU"/>
+        <column xsi:type="varchar" name="seller_id" nullable="false" length="64" comment="Mercur seller ID"/>
+        <column xsi:type="varchar" name="mercur_product_id" nullable="true" length="64" comment="Mercur product ID"/>
+        <column xsi:type="varchar" name="variant_id" nullable="false" length="64" comment="Mercur variant ID"/>
+        <column xsi:type="varchar" name="shipping_profile_id" nullable="true" length="64" comment="Shipping profile ID"/>
+        <column xsi:type="decimal" name="price" scale="4" precision="20" nullable="true" comment="Price"/>
+        <column xsi:type="decimal" name="origin_price" scale="4" precision="20" nullable="true" comment="Price before discount"/>
+        <column xsi:type="varchar" name="currency_code" nullable="true" length="3" comment="Currency"/>
+        <column xsi:type="text" name="price_ranges" nullable="true" comment="Quantity tier prices JSON"/>
+        <column xsi:type="int" name="quantity" nullable="true" comment="Available quantity"/>
+        <column xsi:type="boolean" name="allow_backorder" nullable="false" default="false" comment="Allow backorder"/>
+        <column xsi:type="boolean" name="manage_inventory" nullable="false" default="true" comment="Manage inventory"/>
+        <column xsi:type="smallint" name="leadtime_to_ship" unsigned="true" nullable="true" comment="Lead time to ship"/>
+        <column xsi:type="varchar" name="condition_code" nullable="true" length="64" comment="Condition"/>
+        <column xsi:type="boolean" name="active" nullable="false" default="true" comment="Active"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="true" comment="Mercur updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="offer_id"/>
+        </constraint>
+        <index referenceId="MERCUR_OFFER_PRODUCT_SKU" indexType="btree">
+            <column name="product_sku"/>
+        </index>
+        <index referenceId="MERCUR_OFFER_SELLER_ID" indexType="btree">
+            <column name="seller_id"/>
+        </index>
+    </table>
+    <table name="quote">
+        <column xsi:type="varchar" name="mercur_cart_id" nullable="true" length="64" comment="Mercur shadow cart ID"/>
+        <column xsi:type="text" name="mercur_shipping_methods" nullable="true" comment="Chosen Mercur shipping option per seller JSON"/>
+    </table>
+    <table name="quote_item">
+        <column xsi:type="varchar" name="mercur_offer_id" nullable="true" length="64" comment="Mercur offer ID"/>
+        <column xsi:type="varchar" name="mercur_seller_id" nullable="true" length="64" comment="Mercur seller ID"/>
+        <column xsi:type="varchar" name="mercur_line_item_id" nullable="true" length="64" comment="Mercur line item ID"/>
+    </table>
+    <table name="quote_address">
+        <column xsi:type="decimal" name="mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping"/>
+    </table>
+    <table name="sales_order">
+        <column xsi:type="varchar" name="mercur_cart_id" nullable="true" length="64" comment="Mercur shadow cart ID"/>
+        <column xsi:type="varchar" name="mercur_order_group_id" nullable="true" length="64" comment="Mercur order group ID"/>
+        <column xsi:type="decimal" name="mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping"/>
+    </table>
+    <table name="sales_order_item">
+        <column xsi:type="varchar" name="mercur_offer_id" nullable="true" length="64" comment="Mercur offer ID"/>
+        <column xsi:type="varchar" name="mercur_seller_id" nullable="true" length="64" comment="Mercur seller ID"/>
+        <column xsi:type="varchar" name="mercur_line_item_id" nullable="true" length="64" comment="Mercur line item ID"/>
+        <column xsi:type="varchar" name="mercur_order_id" nullable="true" length="64" comment="Mercur seller order ID"/>
+        <column xsi:type="varchar" name="mercur_status" nullable="true" length="32" comment="Mercur fulfillment status"/>
+    </table>
+</schema>

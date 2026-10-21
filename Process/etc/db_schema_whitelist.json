@@ -1,0 +1,23 @@
+{
+    "mercur_process": {
+        "column": {
+            "id": true,
+            "code": true,
+            "name": true,
+            "status": true,
+            "params": true,
+            "output": true,
+            "duration": true,
+            "created_at": true,
+            "started_at": true,
+            "finished_at": true
+        },
+        "index": {
+            "MERCUR_PROCESS_STATUS_CREATED_AT": true,
+            "MERCUR_PROCESS_CODE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

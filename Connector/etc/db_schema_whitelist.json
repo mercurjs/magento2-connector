@@ -1,0 +1,88 @@
+{
+    "mercur_seller": {
+        "column": {
+            "seller_id": true,
+            "name": true,
+            "handle": true,
+            "status": true,
+            "premium": true,
+            "default_leadtime_to_ship": true,
+            "closed_from": true,
+            "closed_to": true,
+            "description": true,
+            "logo": true,
+            "updated_at": true
+        },
+        "index": {
+            "MERCUR_SELLER_HANDLE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mercur_offer": {
+        "column": {
+            "offer_id": true,
+            "product_sku": true,
+            "seller_sku": true,
+            "seller_id": true,
+            "mercur_product_id": true,
+            "variant_id": true,
+            "shipping_profile_id": true,
+            "price": true,
+            "origin_price": true,
+            "currency_code": true,
+            "price_ranges": true,
+            "quantity": true,
+            "allow_backorder": true,
+            "manage_inventory": true,
+            "leadtime_to_ship": true,
+            "condition_code": true,
+            "active": true,
+            "updated_at": true
+        },
+        "index": {
+            "MERCUR_OFFER_PRODUCT_SKU": true,
+            "MERCUR_OFFER_SELLER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "quote": {
+        "column": {
+            "mercur_cart_id": true,
+            "mercur_shipping_methods": true
+        }
+    },
+    "quote_item": {
+        "column": {
+            "mercur_offer_id": true,
+            "mercur_seller_id": true,
+            "mercur_line_item_id": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "mercur_shipping_amount": true,
+            "base_mercur_shipping_amount": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "mercur_cart_id": true,
+            "mercur_order_group_id": true,
+            "mercur_shipping_amount": true,
+            "base_mercur_shipping_amount": true
+        }
+    },
+    "sales_order_item": {
+        "column": {
+            "mercur_offer_id": true,
+            "mercur_seller_id": true,
+            "mercur_line_item_id": true,
+            "mercur_order_id": true,
+            "mercur_status": true
+        }
+    }
+}

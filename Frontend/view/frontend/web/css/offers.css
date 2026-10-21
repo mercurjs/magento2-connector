@@ -1,0 +1,11 @@
+.mercur-offers { margin: 24px 0; }
+.mercur-offers__title { font-size: 1.4rem; margin-bottom: 12px; }
+.mercur-offers__list { list-style: none; margin: 0; padding: 0; }
+.mercur-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #e2e2e2; }
+.mercur-offer--best { background: #f6fbf6; }
+.mercur-offer__seller { font-weight: 600; flex: 1 1 160px; }
+.mercur-offer__badge { font-size: 0.85rem; padding: 2px 8px; border-radius: 10px; background: #e8f3e8; color: #1f6b2f; }
+.mercur-offer__badge--premium { background: #fff4df; color: #8a5a00; }
+.mercur-offer__price { font-weight: 700; }
+.mercur-offer__leadtime, .mercur-offer__condition { color: #666; font-size: 0.9rem; }
+.mercur-offer__form { margin-left: auto; }

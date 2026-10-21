@@ -1,0 +1,18 @@
+{
+    "mercur_offer_product_index": {
+        "column": {
+            "product_sku": true,
+            "website_id": true,
+            "best_offer_id": true,
+            "best_seller_id": true,
+            "best_price": true,
+            "min_price": true,
+            "max_price": true,
+            "offer_count": true,
+            "operator_available": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mercur_Core::mercur" title="Mercur" module="Mercur_Core" sortOrder="80" resource="Mercur_Core::mercur"/>
+        <add id="Mercur_Core::config" title="Configuration" module="Mercur_Core" sortOrder="90" parent="Mercur_Core::mercur" action="adminhtml/system_config/edit/section/mercur" resource="Mercur_Core::config"/>
+    </menu>
+</config>

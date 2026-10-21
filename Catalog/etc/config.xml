@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <mercur>
+            <catalog>
+                <attribute_group>Marketplace</attribute_group>
+                <attribute_set_id>4</attribute_set_id>
+                <import_products>1</import_products>
+                <imported_product_status>1</imported_product_status>
+                <imported_product_visibility>4</imported_product_visibility>
+            </catalog>
+        </mercur>
+    </default>
+</config>

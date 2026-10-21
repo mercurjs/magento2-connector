@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Mercur\Process\Model\TaskPool">
+        <arguments>
+            <argument name="tasks" xsi:type="array">
+                <item name="sellers" xsi:type="object">Mercur\Connector\Model\Task\SellerSync</item>
+                <item name="offers" xsi:type="object">Mercur\Connector\Model\Task\OfferSync</item>
+                <item name="order_retry" xsi:type="object">Mercur\Connector\Model\Task\OrderRetry</item>
+                <item name="full" xsi:type="object">Mercur\Connector\Model\Task\FullSync</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Task\FullSync">
+        <arguments>
+            <argument name="order" xsi:type="array">
+                <item name="sellers" xsi:type="string">sellers</item>
+                <item name="offers" xsi:type="string">offers</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Mercur\Connector\Model\Webhook\Handler\EnqueueOfferSync" type="Mercur\Connector\Model\Webhook\Handler\EnqueueSync">
+        <arguments>
+            <argument name="task" xsi:type="string">offers</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync" type="Mercur\Connector\Model\Webhook\Handler\EnqueueSync">
+        <arguments>
+            <argument name="task" xsi:type="string">sellers</argument>
+        </arguments>
+    </virtualType>
+    <type name="Mercur\Connector\Model\Webhook\Dispatcher">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="offer.created" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueOfferSync</item>
+                </item>
+                <item name="offer.updated" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueOfferSync</item>
+                </item>
+                <item name="offer.deleted" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueOfferSync</item>
+                </item>
+                <item name="seller.updated" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="seller.approved" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="seller.suspended" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="seller.unsuspended" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="seller.terminated" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="seller.unterminated" xsi:type="array">
+                    <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
+                </item>
+                <item name="order.shipment_created" xsi:type="array">
+                    <item name="shipment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\OrderShipment</item>
+                </item>
+                <item name="order.canceled" xsi:type="array">
+                    <item name="canceled" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\OrderCanceled</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Controller\Webhook\Index">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Observer\PlaceMarketplaceOrder">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Order\Synchronizer">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Total\MarketplaceShipping">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Magento\CatalogInventory\Model\Quote\Item\QuantityValidator">
+        <plugin name="mercur_skip_stock_validation_for_offers" type="Mercur\Connector\Plugin\SkipStockValidationForOffers"/>
+    </type>
+    <type name="Magento\CatalogInventory\Observer\SubtractQuoteInventoryObserver">
+        <plugin name="mercur_skip_stock_deduction_for_offers" type="Mercur\Connector\Plugin\SkipStockDeductionForOffers"/>
+    </type>
+</config>

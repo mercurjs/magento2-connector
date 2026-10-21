@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="mercur_sync" xsi:type="object">Mercur\Process\Console\Command\RunCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Process\Model\Runner">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <virtualType name="Mercur\Process\Model\ResourceModel\Process\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mercur_process</argument>
+            <argument name="resourceModel" xsi:type="string">Mercur\Process\Model\ResourceModel\Process</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mercur_process_listing_data_source" xsi:type="string">Mercur\Process\Model\ResourceModel\Process\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

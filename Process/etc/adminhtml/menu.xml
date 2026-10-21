@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mercur_Process::process" title="Processes" module="Mercur_Process" sortOrder="10" parent="Mercur_Core::mercur" action="mercur/process/index" resource="Mercur_Core::process"/>
+    </menu>
+</config>

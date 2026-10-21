@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="mercur_process" resource="default" engine="innodb" comment="Mercur Process">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="ID"/>
+        <column xsi:type="varchar" name="code" nullable="false" length="64" comment="Task code"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Name"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="32" default="pending" comment="Status"/>
+        <column xsi:type="text" name="params" nullable="true" comment="JSON params"/>
+        <column xsi:type="longtext" name="output" nullable="true" comment="Output log"/>
+        <column xsi:type="int" name="duration" unsigned="true" nullable="true" comment="Duration in seconds"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="timestamp" name="started_at" nullable="true" comment="Started"/>
+        <column xsi:type="timestamp" name="finished_at" nullable="true" comment="Finished"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <index referenceId="MERCUR_PROCESS_STATUS_CREATED_AT" indexType="btree">
+            <column name="status"/>
+            <column name="created_at"/>
+        </index>
+        <index referenceId="MERCUR_PROCESS_CODE" indexType="btree">
+            <column name="code"/>
+        </index>
+    </table>
+</schema>
