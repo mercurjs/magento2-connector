@@ -1,144 +1,105 @@
-// node .github/banner/banner.mjs > .github/banner.svg
-// A still frame in the hairline idiom: one stroke weight, one monospace face,
-// square corners, colour only where it means something. Palette from mercurjs.com.
+// node .github/banner/banner.mjs > banner.svg && rsvg-convert -w 2640 -o .github/banner.png banner.svg
+// Needs Inter installed for the renderer; the committed artefact is the PNG.
+// Hairline still frame: one stroke weight, isometric guide lines, two tiles,
+// one title set in Inter like the docs. Palette from mercurjs.com.
 
 const W = 1320
 const H = 330
 
 const C = {
   bg: "#090909",
-  plate: "#111111",
-  line: "#262626",
-  rule: "#1c1c1c",
-  tile: "#222222",
+  guide: "#1b1b1b",
+  line: "#3a3a3a",
+  edge: "#262626",
+  plate: "#0e0e0e",
   hi: "#ffffff",
-  text: "#d4d4d4",
   mid: "#9ca3af",
-  lo: "#4a4a4a",
-  accent: "#4c24dd",
-  green: "#17803d",
+  lo: "#5a5a5a",
 }
 
-const FONT = "JetBrains Mono, SF Mono, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace"
-const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
-const measure = (s, size) => s.length * size * 0.6
-
+const FONT = "Inter"
 const out = []
 const push = (s) => out.push(s)
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
 
-const text = (x, y, str, { size = 15, fill = C.text, weight = 400, anchor = "start", spacing = 0 } = {}) =>
-  push(`<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" font-weight="${weight}" text-anchor="${anchor}"${spacing ? ` letter-spacing="${spacing}"` : ""}>${esc(str)}</text>`)
-const rect = (x, y, w, h, { fill = "none", stroke, dash } = {}) =>
-  push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="1"` : ""}${dash ? ` stroke-dasharray="${dash}"` : ""} shape-rendering="crispEdges"/>`)
 const line = (x1, y1, x2, y2, stroke = C.line) =>
-  push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="1" shape-rendering="crispEdges"/>`)
-const marker = (x, mid, fill) => rect(x, mid - 5, 10, 10, { fill })
+  push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="1"/>`)
 
-// Deterministic tiles, denser toward the edges, kept out of the title and panels.
-const seed = (n) => () => ((n = (n * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
-const rnd = seed(11)
-const CLEAR = [
-  { x: 60, y: 40, w: 690, h: 250 },
-  { x: 800, y: 24, w: 460, h: 290 },
-]
-const tiles = () => {
-  const size = 88
-  for (let gx = -size / 2; gx < W; gx += size) {
-    for (let gy = -size / 2 - 20; gy < H; gy += size) {
-      const cx = gx + size / 2
-      const cy = gy + size / 2
-      const edge = Math.max(Math.abs(cx - W / 2) / (W / 2), Math.abs(cy - H / 2) / (H / 2))
-      const blocked = CLEAR.some((c) => cx > c.x - size / 2 && cx < c.x + c.w + size / 2 && cy > c.y - size / 2 && cy < c.y + c.h + size / 2)
-      const r = rnd()
-      if (blocked || r > 0.12 + edge * 0.3) {
-        continue
-      }
-      if (r < 0.08) {
-        rect(gx, gy, size, size, { stroke: C.tile, dash: "2 4" })
-      } else {
-        rect(gx, gy, size, size, { stroke: C.tile })
-      }
-    }
+// Isometric projection: unit x runs down-right, unit y runs down-left.
+const ISO = "matrix(0.866 0.5 -0.866 0.5 0 0)"
+const iso = (x, y) => [(x - y) * 0.866, (x + y) * 0.5]
+
+// Sparse guide lines along both isometric axes, the reference's background.
+const guides = () => {
+  const dx = Math.cos(Math.PI / 6) * 3000
+  const dy = Math.sin(Math.PI / 6) * 3000
+  for (const x of [-1500, -900, -300, 300, 900]) {
+    line(x, -600, x + dx, -600 + dy, C.guide)
   }
-  // crosses on the grid, like survey marks
-  for (let gx = -size / 2; gx <= W + size; gx += size) {
-    for (let gy = -size / 2 - 20; gy <= H + size; gy += size) {
-      if (rnd() > 0.55) continue
-      line(gx - 4, gy, gx + 5, gy, C.lo)
-      line(gx, gy - 4, gx, gy + 5, C.lo)
-    }
+  for (const x of [600, 1200, 1800, 2400, 3000]) {
+    line(x, -600, x - dx, -600 + dy, C.guide)
   }
 }
 
-// A small plate with a header and rows, the product doing the thing.
-const panel = (x, y, w, h, draw) => {
-  push(`<rect x="${x + 6}" y="${y + 6}" width="${w}" height="${h}" fill="#000000" opacity="0.6"/>`)
-  rect(x, y, w, h, { fill: C.plate, stroke: C.line })
-  push(`<g transform="translate(${x} ${y})">`)
-  draw()
-  push(`</g>`)
+// A rounded plate in isometric view with a thin extruded edge below it.
+const tile = (cx, cy, size, depth, icon) => {
+  const r = size * 0.18
+  const plate = `<rect x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}" rx="${r}" ry="${r}"`
+  const at = (dy) => `translate(${cx} ${cy + dy}) ${ISO}`
+  // bottom outline
+  push(`<g transform="${at(depth)}">${plate} fill="${C.plate}" stroke="${C.edge}" stroke-width="1"/></g>`)
+  // side edges at the extreme corners
+  const [lx, ly] = iso(-size / 2 + r * 0.3, size / 2 - r * 0.3)
+  const [rx, ry] = iso(size / 2 - r * 0.3, -size / 2 + r * 0.3)
+  const [bx, by] = iso(size / 2 - r * 0.3, size / 2 - r * 0.3)
+  line(cx + lx, cy + ly, cx + lx, cy + ly + depth, C.edge)
+  line(cx + rx, cy + ry, cx + rx, cy + ry + depth, C.edge)
+  line(cx + bx, cy + by, cx + bx, cy + by + depth, C.edge)
+  // top plate
+  push(`<g transform="${at(0)}">${plate} fill="${C.plate}" stroke="${C.line}" stroke-width="1"/>` +
+    `${plate.replace(`x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}"`, `x="${-size / 2 + 10}" y="${-size / 2 + 10}" width="${size - 20}" height="${size - 20}"`)} fill="none" stroke="${C.edge}" stroke-width="1"/>` +
+    `<g transform="translate(${-size / 2}) translate(0 ${-size / 2})">${icon(size)}</g>` +
+    `</g>`)
 }
 
-const mark = (x, y, scale, fill) =>
-  push(
-    `<g transform="translate(${x} ${y}) scale(${scale})" fill="${fill}">` +
-      `<path d="M7 4V14.988L16.541 9.49398L7 4Z"/>` +
-      `<path d="M29.5993 28.0002V17.0122L20.0583 22.5062L29.5993 28.0002Z"/>` +
-      `<path d="M7 17.012V28L29.5994 14.988V4L7 17.012Z"/>` +
-      `</g>`
-  )
+// The Mercur mark, outlined, centred in a tile of `size`.
+const mercurMark = (size) => {
+  const s = (size * 0.46) / 32
+  const o = (size - 32 * s) / 2
+  return `<g transform="translate(${o} ${o}) scale(${s})" fill="${C.plate}" stroke="${C.hi}" stroke-width="${1 / s}" stroke-linejoin="round">` +
+    `<path d="M7 4V14.988L16.541 9.49398L7 4Z"/>` +
+    `<path d="M29.5993 28.0002V17.0122L20.0583 22.5062L29.5993 28.0002Z"/>` +
+    `<path d="M7 17.012V28L29.5994 14.988V4L7 17.012Z"/>` +
+    `</g>`
+}
 
-push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}" role="img" aria-label="Mercur Magento 2 Connector: marketplace offers inside your Magento store.">`)
-rect(0, 0, W, H, { fill: C.bg })
-tiles()
+// A shopping bag, outlined, for the storefront side.
+const bagMark = (size) => {
+  const s = size * 0.44
+  const o = (size - s) / 2
+  const u = s / 24
+  return `<g transform="translate(${o} ${o}) scale(${u})" fill="${C.plate}" stroke="${C.hi}" stroke-width="${1 / u}" stroke-linejoin="round" stroke-linecap="round">` +
+    `<path d="M4 8H20L19 21H5L4 8Z"/>` +
+    `<path d="M8.5 8V6.5C8.5 4.5 10 3 12 3C14 3 15.5 4.5 15.5 6.5V8"/>` +
+    `</g>`
+}
 
-// Left: title block, Nitro's placement.
-text(80, 128, "Mercur", { size: 64, fill: C.hi, weight: 500 })
-text(80, 196, "Magento 2 Connector", { size: 64, fill: C.hi, weight: 500 })
-text(80, 246, "Marketplace offers, inside the Magento store you already run.", { size: 18, fill: C.mid })
-text(80, 276, "mercurjs.com", { size: 16, fill: C.lo })
+push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}" role="img" aria-label="Mercur Magento 2 Connector">`)
+push(`<rect width="${W}" height="${H}" fill="${C.bg}"/>`)
+guides()
 
-// Right: two plates back to front. Behind, the Magento product page listing
-// seller offers. In front, the Mercur order group the checkout turned into.
-panel(860, 36, 360, 170, () => {
-  marker(20, 28, C.lo)
-  text(40, 33, "PRODUCT · MAG-SKU-2041", { size: 13, fill: C.mid, spacing: 1.2 })
-  line(0, 56, 360, 56)
-  const rows = [
-    ["Sold by us", "$ 129.00"],
-    ["Northwind Audio", "$ 119.00"],
-    ["Keller & Co", "$ 124.50"],
-  ]
-  rows.forEach(([seller, price], i) => {
-    const y = 56 + i * 38
-    text(20, y + 24, seller, { size: 15, fill: C.text })
-    text(340, y + 24, price, { size: 15, fill: C.mid, anchor: "end" })
-    if (i < rows.length - 1) line(0, y + 38, 360, y + 38, C.rule)
-  })
-})
+// Two tiles, back and front, to the right, like the reference.
+tile(930, 96, 150, 10, mercurMark)
+tile(1120, 206, 150, 10, bagMark)
 
-panel(940, 128, 320, 172, () => {
-  marker(20, 28, C.accent)
-  text(40, 33, "ORDER GROUP #G1042", { size: 13, fill: C.mid, spacing: 1.2 })
-  line(0, 56, 320, 56)
-  const rows = [
-    ["Northwind Audio", "#1042-1", C.green, "SHIPPED"],
-    ["Keller & Co", "#1042-2", C.lo, "OPEN"],
-  ]
-  rows.forEach(([seller, id, tone, status], i) => {
-    const y = 56 + i * 44
-    text(20, y + 27, seller, { size: 15, fill: C.text })
-    text(160, y + 27, id, { size: 14, fill: C.lo })
-    marker(240, y + 22, tone)
-    text(256, y + 27, status, { size: 12, fill: C.mid, spacing: 1 })
-    if (i < rows.length - 1) line(0, y + 44, 320, y + 44, C.rule)
-  })
-  line(0, 144, 320, 144)
-  text(20, 164, "1 payment · 2 seller orders", { size: 13, fill: C.lo })
-})
+// One small cross, the reference's survey mark.
+line(792, 170, 806, 170, C.lo)
+line(799, 163, 799, 177, C.lo)
 
-// Mercur mark, top right, the way Nitro places its logo.
-mark(1226, 20, 1.9, C.hi)
+// Title, Inter, weight 600, tight tracking like the docs h1.
+push(`<text x="80" y="108" font-size="20" fill="${C.mid}" font-weight="400" letter-spacing="-0.2">${esc("mercurjs.com")}</text>`)
+push(`<text x="80" y="188" font-family="Inter SemiBold" font-size="68" fill="${C.hi}" font-weight="600" letter-spacing="-2">${esc("Mercur")}</text>`)
+push(`<text x="80" y="266" font-family="Inter SemiBold" font-size="68" fill="${C.hi}" font-weight="600" letter-spacing="-2">${esc("Magento 2 Connector")}</text>`)
 
 push(`</svg>`)
 process.stdout.write(out.join("\n") + "\n")

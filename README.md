@@ -1,5 +1,5 @@
 <a href="https://mercurjs.com">
-  <img alt="Mercur Magento 2 Connector" src=".github/banner.svg" width="100%">
+  <img alt="Mercur Magento 2 Connector" src=".github/banner.png" width="100%">
 </a>
 
 <p align="center">
