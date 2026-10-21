@@ -54,7 +54,7 @@ For a more detailed overview head over to the [Mercur docs](https://docs.mercurj
 
 ### Does Magento still own first-party sales?
 
-Yes. A cart line without `mercur_offer_id` is a normal Magento line with your price, stock and carriers. Only seller lines skip Magento's stock checks, because the seller owns that stock.
+Yes. Your own products sell exactly as before, with your prices, your stock and your carriers. Only lines bought from a seller skip Magento's stock checks, because the seller owns that stock.
 
 ## Quick start
 
