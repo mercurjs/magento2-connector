@@ -5,7 +5,7 @@
 <p align="center">
     Sell marketplace offers from your Magento 2 store, next to your own products.
     <br />
-    <a href="https://docs.mercurjs.com">Documentation</a>
+    <a href="https://docs.mercurjs.com/resources/integrations/magento2">Documentation</a>
     ·
     <a href="https://github.com/mercurjs/mercur/issues/new?template=feature_request.md">Request Features</a>
     ·
@@ -34,14 +34,9 @@ Watch [Mercur releases](https://github.com/mercurjs/mercur/releases) to get noti
 
 ### What is this?
 
-This is a Composer package of Magento 2 modules that connects a Magento Open Source or Adobe Commerce store to a [Mercur](https://mercurjs.com) marketplace. Magento keeps the storefront, cart, checkout, payment and your own catalog. Mercur keeps sellers, their offers, the split into one order per seller, commissions and payouts. The connector mirrors sellers and offers into Magento and talks to Mercur at the four points where the two must agree:
+This is a Composer package of Magento 2 modules that connects a Magento Open Source or Adobe Commerce store to a [Mercur](https://mercurjs.com) marketplace. Magento keeps the storefront, cart, checkout, payment and your own catalog. Mercur keeps sellers, their offers, the split into one order per seller, commissions and payouts.
 
-- Offers: seller offers are synced by SKU and indexed into a best offer per website
-- Checkout: marketplace lines drive a shadow Mercur cart with per-seller shipping, then the captured payment completes it into an order group
-- Webhooks: seller shipments, cancellations and catalog changes arrive signed at `/mercur/webhook`
-- Taxonomy: your categories and attributes are pushed so sellers submit against them
-
-For a more detailed overview head over to the [Mercur docs](https://docs.mercurjs.com).
+For a more detailed overview head over to the [Magento 2 integration guide](https://docs.mercurjs.com/resources/integrations/magento2).
 
 ### Does Magento still own first-party sales?
 
@@ -56,14 +51,7 @@ bin/magento module:enable Mercur_Core Mercur_Process Mercur_Connector \
 bin/magento setup:upgrade && bin/magento setup:di:compile && bin/magento cache:flush
 ```
 
-Fill in the connection under **Stores > Configuration > Mercur > Marketplace** (API URL, admin and publishable keys, sales channel, region, webhook secret), register `https://your_shop_domain/mercur/webhook` in Mercur under **Settings > Magento**, then run the first sync:
-
-```bash
-bin/magento mercur:sync taxonomy
-bin/magento mercur:sync full
-```
-
-Cron keeps the mirror current after that. Every run shows up under **Mercur > Processes**.
+Then follow the [setup guide](https://docs.mercurjs.com/resources/integrations/magento2) to install the Mercur plugin, connect the two and run the first sync.
 
 ## Developers
 
@@ -73,7 +61,7 @@ composer lint
 composer test
 ```
 
-The package needs a Mercur API running `@mercurjs/magento2-connector-plugin` with its external payment provider registered.
+The package needs a Mercur API running [`@mercurjs/magento2-connector-plugin`](https://github.com/mercurjs/mercur/tree/main/packages/plugins/magento2-connector) with its external payment provider registered.
 
 | Module | Responsibility |
 | --- | --- |
