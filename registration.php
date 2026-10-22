@@ -13,6 +13,7 @@ $modules = [
     'Mercur_Settlement' => 'Settlement',
     'Mercur_Frontend' => 'Frontend',
     'Mercur_GraphQl' => 'GraphQl',
+    'Mercur_Inventory' => 'Inventory',
 ];
 
 foreach ($modules as $name => $dir) {

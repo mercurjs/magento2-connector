@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Mercur\Inventory\Model\MarketplaceQty" shared="true"/>
+    <type name="Magento\InventorySales\Model\CheckItemsQuantity">
+        <plugin name="mercur_skip_marketplace_salable_check" type="Mercur\Inventory\Plugin\SkipMarketplaceSalableCheck"/>
+    </type>
+    <type name="Magento\InventorySalesApi\Api\PlaceReservationsForSalesEventInterface">
+        <plugin name="mercur_skip_marketplace_reservations" type="Mercur\Inventory\Plugin\SkipMarketplaceReservations"/>
+    </type>
+    <type name="Magento\InventoryShipping\Model\GetItemsToDeductFromShipment">
+        <plugin name="mercur_skip_marketplace_source_deduction" type="Mercur\Inventory\Plugin\SkipMarketplaceSourceDeduction"/>
+    </type>
+</config>
