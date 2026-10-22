@@ -31,3 +31,6 @@
 .mercur-marketplace-orders table { width: 100%; }
 .mercur-offer__variant { display: block; font-weight: 400; color: #666; font-size: 0.9rem; }
 .mercur-offer__qty { width: 64px; margin-right: 8px; }
+.mercur-offer--hidden { display: none; }
+.mercur-offer__price-excl { color: #666; font-size: 0.9rem; }
+.mercur-listing-price .price-label { margin-right: 4px; }

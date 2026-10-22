@@ -3,6 +3,8 @@
     <module name="Mercur_OfferIndexer">
         <sequence>
             <module name="Mercur_Connector"/>
+            <module name="Magento_Indexer"/>
+            <module name="Magento_ConfigurableProduct"/>
         </sequence>
     </module>
 </config>

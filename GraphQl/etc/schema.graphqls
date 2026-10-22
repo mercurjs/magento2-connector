@@ -18,6 +18,7 @@ type MercurOffer @doc(description: "A seller's offer against a product.") {
     leadtime_to_ship: Int
     estimated_delivery: MercurDeliveryWindow
     condition_code: String
+    condition_label: String @doc(description: "Human-readable condition, e.g. New or Refurbished.")
     is_best: Boolean!
 }
 

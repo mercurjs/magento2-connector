@@ -35,6 +35,7 @@ class OfferMapper
             'manage_inventory' => (int) ($offer['manage_inventory'] ?? true),
             'leadtime_to_ship' => $offer['leadtime_to_ship'] ?? ($seller['default_leadtime_to_ship'] ?? null),
             'condition_code' => $offer['condition']['code'] ?? null,
+            'condition_label' => $offer['condition']['label'] ?? null,
             'active' => (int) $this->sellers->isSelling($seller),
             'updated_at' => $this->timestamp($offer['updated_at'] ?? null),
         ];

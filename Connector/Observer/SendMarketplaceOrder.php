@@ -6,11 +6,18 @@ namespace Mercur\Connector\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Model\Order;
+use Mercur\Connector\Model\Order\SendGate;
 use Mercur\Connector\Model\Order\Synchronizer;
 use Mercur\Core\Model\Config;
 use Psr\Log\LoggerInterface;
 
-class PlaceMarketplaceOrder implements ObserverInterface
+/**
+ * sales_order_save_commit_after: once the order is committed in one of the
+ * configured statuses it is created in Mercur. The event fires on every save,
+ * so an order that already has its group is left alone.
+ */
+class SendMarketplaceOrder implements ObserverInterface
 {
     public function __construct(
         private readonly Synchronizer $synchronizer,
@@ -22,7 +29,17 @@ class PlaceMarketplaceOrder implements ObserverInterface
     public function execute(Observer $observer): void
     {
         $order = $observer->getEvent()->getData('order');
-        if (!$order || !$this->config->isEnabled((int) $order->getStoreId())) {
+        if (!$order instanceof Order || !$this->config->isEnabled((int) $order->getStoreId())) {
+            return;
+        }
+
+        $send = SendGate::shouldSend(
+            (string) $order->getStatus(),
+            $this->config->getAutoCreateStatuses((int) $order->getStoreId()),
+            (string) $order->getData('mercur_order_group_id') !== '' || (bool) $order->getData('mercur_sent_at'),
+            (string) $order->getData('mercur_cart_id') !== ''
+        );
+        if (!$send) {
             return;
         }
 

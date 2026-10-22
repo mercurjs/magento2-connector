@@ -18,7 +18,13 @@
     <event name="sales_order_creditmemo_refund">
         <observer name="mercur_track_shipping_refunded" instance="Mercur\Connector\Observer\TrackMarketplaceShippingInvoiced"/>
     </event>
-    <event name="sales_order_place_after">
-        <observer name="mercur_place_marketplace_order" instance="Mercur\Connector\Observer\PlaceMarketplaceOrder"/>
+    <event name="sales_order_save_commit_after">
+        <observer name="mercur_send_marketplace_order" instance="Mercur\Connector\Observer\SendMarketplaceOrder"/>
+    </event>
+    <event name="sales_order_invoice_pay">
+        <observer name="mercur_capture_marketplace_payment" instance="Mercur\Connector\Observer\CaptureMarketplacePayment"/>
+    </event>
+    <event name="order_cancel_after">
+        <observer name="mercur_cancel_marketplace_payment" instance="Mercur\Connector\Observer\CancelMarketplacePayment"/>
     </event>
 </config>

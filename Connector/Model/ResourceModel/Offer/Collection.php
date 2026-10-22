@@ -48,11 +48,20 @@ class Collection extends AbstractCollection
         return $this;
     }
 
-    public function joinSeller(): self
+    /**
+     * With $openOnly the join becomes inner on `status = 'open'`, dropping the
+     * offers of suspended, terminated or not yet approved sellers.
+     */
+    public function joinSeller(bool $openOnly = false): self
     {
-        $this->getSelect()->joinLeft(
+        $condition = 'seller.seller_id = main_table.seller_id';
+        if ($openOnly) {
+            $condition .= $this->getConnection()->quoteInto(' AND seller.status = ?', 'open');
+        }
+        $method = $openOnly ? 'join' : 'joinLeft';
+        $this->getSelect()->{$method}(
             ['seller' => $this->getTable('mercur_seller')],
-            'seller.seller_id = main_table.seller_id',
+            $condition,
             [
                 'seller_name' => 'seller.name',
                 'seller_handle' => 'seller.handle',

@@ -1,0 +1,8 @@
+<?php
+/** @var \Mercur\Frontend\Block\Cart\ConfigureOffer $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$offerId = $block->getOfferId();
+?>
+<?php if ($offerId !== ''): ?>
+    <input type="hidden" name="mercur_offer_id" value="<?= $escaper->escapeHtmlAttr($offerId) ?>"/>
+<?php endif; ?>

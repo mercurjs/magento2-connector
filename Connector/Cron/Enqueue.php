@@ -50,8 +50,8 @@ class Enqueue
 
     private function enqueue(string $code): void
     {
-        if ($this->config->isEnabled()) {
-            $this->runner->enqueue($code);
+        if ($this->config->isEnabledAnywhere()) {
+            $this->runner->enqueueOnce($code);
         }
     }
 }

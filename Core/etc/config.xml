@@ -11,13 +11,29 @@
                 <region_id/>
                 <channel>magento</channel>
                 <timeout>15</timeout>
+                <retries>2</retries>
+                <retry_delay_ms>500</retry_delay_ms>
+                <log_level>errors</log_level>
             </general>
+            <process>
+                <timeout_sec>3600</timeout_sec>
+                <history_days>30</history_days>
+                <max_attempts>3</max_attempts>
+            </process>
             <offers>
                 <best_offer_rule>lowest_total_price</best_offer_rule>
                 <operator_label>Sold by us</operator_label>
             </offers>
+            <checkout>
+                <shipping_prices_include_tax>0</shipping_prices_include_tax>
+                <auto_remove_unavailable>1</auto_remove_unavailable>
+            </checkout>
+            <order>
+                <auto_create_statuses>pending,processing</auto_create_statuses>
+            </order>
             <webhook>
                 <secret backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <max_age_sec>0</max_age_sec>
             </webhook>
             <delivery>
                 <enabled>1</enabled>

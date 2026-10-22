@@ -1,0 +1,33 @@
+<?php
+/** @var \Mercur\Core\Block\Adminhtml\System\Config\TestConnection $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<div class="mercur-test-connection">
+    <?= /* @noEscape */ $block->getButtonHtml() ?>
+    <p id="mercur_test_connection_result" class="note" style="margin-top:.5rem;"></p>
+</div>
+<script>
+require(['jquery', 'mage/translate'], function ($, $t) {
+    var button = $('#mercur_test_connection');
+    var result = $('#mercur_test_connection_result');
+    button.on('click', function (event) {
+        event.preventDefault();
+        button.prop('disabled', true);
+        result.removeClass('error success').text($t('Connecting…'));
+        $.ajax({
+            url: '<?= $escaper->escapeJs($escaper->escapeUrl($block->getAjaxUrl())) ?>',
+            type: 'POST',
+            dataType: 'json',
+            data: { form_key: window.FORM_KEY }
+        }).done(function (response) {
+            result.toggleClass('error', !response.success).toggleClass('success', !!response.success)
+                .css('color', response.success ? '#006400' : '#e22626')
+                .text(response.message || '');
+        }).fail(function () {
+            result.css('color', '#e22626').text($t('The request failed. Check the admin session and try again.'));
+        }).always(function () {
+            button.prop('disabled', false);
+        });
+    });
+});
+</script>

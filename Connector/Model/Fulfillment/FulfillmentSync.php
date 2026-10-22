@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mercur\Connector\Model\Fulfillment;
 
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Sales\Api\Data\ShipmentCommentCreationInterfaceFactory;
 use Magento\Sales\Api\Data\ShipmentItemCreationInterfaceFactory;
 use Magento\Sales\Api\Data\ShipmentTrackCreationInterfaceFactory;
@@ -40,6 +41,7 @@ class FulfillmentSync
         private readonly ShipmentRepositoryInterface $shipments,
         private readonly ShipmentCollectionFactory $shipmentCollection,
         private readonly OrderRepositoryInterface $orders,
+        private readonly ManagerInterface $events,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -71,7 +73,7 @@ class FulfillmentSync
         }
         foreach ($items as $item) {
             $line = $remoteLines[(string) $item->getData('mercur_order_line_item_id')] ?? null;
-            if ($line !== null && $item->getData('mercur_status') !== StatusResolver::CANCELED) {
+            if ($line !== null && !StatusResolver::isCanceled((string) $item->getData('mercur_status'))) {
                 $item->setData('mercur_status', $this->statuses->resolve($line));
             }
         }
@@ -84,6 +86,11 @@ class FulfillmentSync
         foreach ($plans as $plan) {
             $this->createShipment($order, $plan);
         }
+        $this->events->dispatch('mercur_fulfillment_synced', [
+            'order' => $order,
+            'seller_order_id' => $sellerOrderId,
+            'shipments_created' => count($plans),
+        ]);
     }
 
     private function createShipment(Order $order, array $plan): void

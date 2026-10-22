@@ -11,4 +11,10 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Catalog\Block\Product\AbstractProduct">
+        <plugin name="mercur_listing_price_html" type="Mercur\Frontend\Plugin\ListingPriceHtml"/>
+    </type>
+    <type name="Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="mercur_prime_listing_summary" type="Mercur\Frontend\Plugin\PrimeListingSummary"/>
+    </type>
 </config>

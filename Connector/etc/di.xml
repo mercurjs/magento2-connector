@@ -12,6 +12,7 @@
     </type>
     <type name="Mercur\Connector\Model\Task\FullSync">
         <arguments>
+            <argument name="runner" xsi:type="object">Mercur\Process\Model\Runner\Proxy</argument>
             <argument name="order" xsi:type="array">
                 <item name="sellers" xsi:type="string">sellers</item>
                 <item name="offers" xsi:type="string">offers</item>
@@ -91,7 +92,34 @@
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
     </type>
-    <type name="Mercur\Connector\Observer\PlaceMarketplaceOrder">
+    <type name="Mercur\Process\Model\HistoryCleaner">
+        <arguments>
+            <argument name="pruners" xsi:type="array">
+                <item name="webhook_events" xsi:type="object">Mercur\Connector\Model\Webhook\EventLog</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Task\OfferSync">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Observer\SendMarketplaceOrder">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Observer\CaptureMarketplacePayment">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Observer\CancelMarketplacePayment">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Webhook\Handler\OrderCanceled">
         <arguments>
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
@@ -126,6 +154,15 @@
     <type name="Magento\CatalogInventory\Observer\SubtractQuoteInventoryObserver">
         <plugin name="mercur_skip_stock_deduction_for_offers" type="Mercur\Connector\Plugin\SkipStockDeductionForOffers"/>
     </type>
+    <type name="Magento\CatalogInventory\Model\ResourceModel\Stock\Status">
+        <plugin name="mercur_include_offered_products_in_status_filter" type="Mercur\Connector\Plugin\Stock\IncludeOfferedProductsInStatusFilter"/>
+    </type>
+    <type name="Magento\CatalogInventory\Helper\Stock">
+        <plugin name="mercur_include_offered_products_in_helper_filter" type="Mercur\Connector\Plugin\Stock\IncludeOfferedProductsInHelperFilter"/>
+    </type>
+    <type name="Magento\CatalogSearch\Model\Indexer\Plugin\StockedProductsFilterPlugin">
+        <plugin name="mercur_include_offered_products_in_fulltext" type="Mercur\Connector\Plugin\Search\IncludeOfferedProductsInFulltext"/>
+    </type>
     <virtualType name="Mercur\Connector\Model\ResourceModel\Seller\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">mercur_seller</argument>
@@ -153,4 +190,34 @@
             </argument>
         </arguments>
     </virtualType>
+    <type name="Magento\Checkout\Model\ShippingInformationManagement">
+        <plugin name="mercur_block_checkout_on_shipping_error" type="Mercur\Connector\Plugin\BlockCheckoutOnShippingError"/>
+    </type>
+    <type name="Magento\Checkout\Model\PaymentInformationManagement">
+        <plugin name="mercur_block_checkout_on_shipping_error" type="Mercur\Connector\Plugin\BlockCheckoutOnShippingError"/>
+    </type>
+    <type name="Magento\Checkout\Model\GuestPaymentInformationManagement">
+        <plugin name="mercur_block_checkout_on_shipping_error" type="Mercur\Connector\Plugin\BlockGuestCheckoutOnShippingError"/>
+    </type>
+    <type name="Magento\QuoteGraphQl\Model\Resolver\PlaceOrder">
+        <plugin name="mercur_block_checkout_on_shipping_error" type="Mercur\Connector\Plugin\BlockCheckoutOnShippingError"/>
+    </type>
+    <type name="Magento\Quote\Model\Quote">
+        <plugin name="mercur_reset_shadow_cart_on_merge" type="Mercur\Connector\Plugin\ResetShadowCartOnMerge"/>
+    </type>
+    <type name="Magento\SalesRule\Model\Validator">
+        <plugin name="mercur_exclude_offer_items_from_discount" type="Mercur\Connector\Plugin\SalesRule\ExcludeOfferItemsFromDiscount"/>
+    </type>
+    <type name="Magento\SalesRule\Model\Rule\Condition\Product">
+        <plugin name="mercur_exclude_offer_items_from_product_condition" type="Mercur\Connector\Plugin\SalesRule\ExcludeOfferItemsFromProductCondition"/>
+    </type>
+    <type name="Magento\SalesRule\Model\Rule\Condition\Address">
+        <plugin name="mercur_operator_only_address_condition" type="Mercur\Connector\Plugin\SalesRule\OperatorOnlyAddressCondition"/>
+    </type>
+    <type name="Magento\SalesRule\Model\RulesApplier">
+        <plugin name="mercur_skip_offer_items_in_rules_applier" type="Mercur\Connector\Plugin\SalesRule\SkipOfferItemsInRulesApplier"/>
+    </type>
+    <type name="Magento\Tax\Model\Sales\Total\Quote\Tax">
+        <plugin name="mercur_add_seller_shipping_taxable" type="Mercur\Connector\Plugin\Tax\AddSellerShippingTaxable"/>
+    </type>
 </config>

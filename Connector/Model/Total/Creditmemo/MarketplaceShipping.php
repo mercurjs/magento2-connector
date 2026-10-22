@@ -6,11 +6,15 @@ namespace Mercur\Connector\Model\Total\Creditmemo;
 
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Creditmemo\Total\AbstractTotal;
+use Mercur\Connector\Model\Tax\SellerShippingTax;
 
 /**
- * Refunds marketplace shipping. A credit memo the connector builds for one
- * seller sets the amount itself; otherwise the remainder is refunded once the
- * last seller line is refunded.
+ * Refunds the marketplace shipping. A credit memo the connector builds for
+ * one seller sets the amount itself; otherwise the remainder is refunded once
+ * the last seller line is refunded. As on the invoice, only the net amount is
+ * added here: Magento's credit memo Tax total (sort 250) adds to tax_amount,
+ * but on the last memo it adds the whole remaining order tax, which already
+ * holds the seller shipping tax.
  */
 class MarketplaceShipping extends AbstractTotal
 {
@@ -30,8 +34,15 @@ class MarketplaceShipping extends AbstractTotal
             return $this;
         }
 
+        $tax = SellerShippingTax::prorate($amount, (float) $order->getData('mercur_shipping_amount'), (float) $order->getData('mercur_shipping_tax_amount'));
+        $baseTax = SellerShippingTax::prorate($baseAmount, (float) $order->getData('base_mercur_shipping_amount'), (float) $order->getData('base_mercur_shipping_tax_amount'));
+
         $creditmemo->setData('mercur_shipping_amount', $amount);
         $creditmemo->setData('base_mercur_shipping_amount', $baseAmount);
+        $creditmemo->setData('mercur_shipping_tax_amount', $tax['tax']);
+        $creditmemo->setData('base_mercur_shipping_tax_amount', $baseTax['tax']);
+        $creditmemo->setData('mercur_shipping_incl_tax', $tax['incl']);
+        $creditmemo->setData('base_mercur_shipping_incl_tax', $baseTax['incl']);
         $creditmemo->setGrandTotal($creditmemo->getGrandTotal() + $amount);
         $creditmemo->setBaseGrandTotal($creditmemo->getBaseGrandTotal() + $baseAmount);
 

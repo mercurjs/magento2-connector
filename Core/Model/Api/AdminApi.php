@@ -109,8 +109,34 @@ class AdminApi
         ]), $this->client->adminHeaders());
     }
 
-    public function status(): array
+    public function captureGroupPayment(string $groupId, string $reference): array
     {
-        return $this->client->get('/admin/magento/status', [], $this->client->adminHeaders());
+        return $this->client->post('/admin/magento/order-groups/' . $groupId . '/payments/capture', [
+            'reference' => $reference,
+        ], $this->client->adminHeaders())['payment'] ?? [];
+    }
+
+    public function cancelGroupPayment(string $groupId, string $reference): array
+    {
+        return $this->client->post('/admin/magento/order-groups/' . $groupId . '/payments/cancel', [
+            'reference' => $reference,
+        ], $this->client->adminHeaders())['payment'] ?? [];
+    }
+
+    public function status(?int $storeId = null): array
+    {
+        return $this->client->get('/admin/magento/status', [], $this->client->adminHeaders($storeId), $storeId);
+    }
+
+    public function getRegion(string $regionId, ?int $storeId = null): array
+    {
+        try {
+            return $this->client->get('/admin/regions/' . $regionId, ['fields' => 'id,name,currency_code'], $this->client->adminHeaders($storeId), $storeId)['region'] ?? [];
+        } catch (ApiException $e) {
+            if ($e->getStatus() === 404) {
+                return [];
+            }
+            throw $e;
+        }
     }
 }

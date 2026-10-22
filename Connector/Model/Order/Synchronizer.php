@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mercur\Connector\Model\Order;
 
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -14,9 +15,10 @@ use Mercur\Core\Model\Config;
 use Psr\Log\LoggerInterface;
 
 /**
- * After Magento captured the payment, records it on the shadow cart's external
- * payment session and completes the cart. Mercur splits it into one order per
- * seller; their ids are written back onto the Magento order and its items.
+ * Once the order is committed in Magento, the shadow cart gets an authorized
+ * external payment session and is completed. Mercur splits it into one order
+ * per seller; their ids are written back onto the Magento order and its items.
+ * The capture is confirmed later, when an invoice is paid.
  */
 class Synchronizer
 {
@@ -26,6 +28,7 @@ class Synchronizer
         private readonly Config $config,
         private readonly OrderRepositoryInterface $orders,
         private readonly Json $json,
+        private readonly ManagerInterface $events,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -39,16 +42,9 @@ class Synchronizer
         }
 
         $storeId = (int) $order->getStoreId();
+        $this->events->dispatch('mercur_order_place_before', ['order' => $order, 'cart_id' => $cartId]);
         $cart = $this->store->getCart($cartId, $storeId);
-        $collection = $this->store->createPaymentCollection($cartId, $storeId);
-        $this->store->createExternalPaymentSession((string) $collection['id'], [
-            'reference' => (string) $order->getIncrementId(),
-            'amount' => (float) ($cart['total'] ?? 0),
-            'currency_code' => strtolower((string) $order->getBaseCurrencyCode()),
-            'captured_at' => gmdate(DATE_ATOM),
-            'channel' => $this->config->getChannel($storeId),
-            'payment_method' => (string) $order->getPayment()?->getMethod(),
-        ], $storeId);
+        $this->ensureExternalPaymentSession($order, $cart, $storeId);
 
         $completed = $this->store->completeCart($cartId, $storeId);
         if (($completed['type'] ?? '') !== 'order_group') {
@@ -61,6 +57,7 @@ class Synchronizer
 
         $group = $completed['order_group'];
         $order->setData('mercur_order_group_id', $group['id']);
+        $order->setData('mercur_sent_at', gmdate('Y-m-d H:i:s'));
         $order->setData('mercur_shipping_methods', $this->json->serialize($this->shippingBySeller($order, $cart)));
         $order->addCommentToStatusHistory(__('Marketplace order group %1 created in Mercur.', $group['display_id'] ?? $group['id']));
 
@@ -85,32 +82,73 @@ class Synchronizer
         }
 
         $this->orders->save($order);
+        $this->events->dispatch('mercur_order_place_after', [
+            'order' => $order,
+            'cart_id' => $cartId,
+            'order_group_id' => (string) $group['id'],
+            'seller_orders' => array_values(array_unique($bySeller)),
+        ]);
+    }
+
+    /**
+     * A retry after a failed completion finds the collection and session from
+     * the earlier attempt on the cart; Mercur allows one collection per cart.
+     */
+    private function ensureExternalPaymentSession(Order $order, array $cart, int $storeId): void
+    {
+        $collection = is_array($cart['payment_collection'] ?? null) ? $cart['payment_collection'] : [];
+        foreach ($collection['payment_sessions'] ?? [] as $session) {
+            if (($session['provider_id'] ?? null) === StoreApi::EXTERNAL_PROVIDER_ID) {
+                return;
+            }
+        }
+
+        $collectionId = (string) ($collection['id'] ?? '');
+        if ($collectionId === '') {
+            $collectionId = (string) ($this->store->createPaymentCollection((string) $cart['id'], $storeId)['id'] ?? '');
+        }
+
+        $this->store->createExternalPaymentSession($collectionId, [
+            'reference' => (string) $order->getIncrementId(),
+            'amount' => (float) ($cart['total'] ?? 0),
+            'currency_code' => strtolower((string) $order->getBaseCurrencyCode()),
+            'authorized_at' => gmdate(DATE_ATOM),
+            'channel' => $this->config->getChannel($storeId),
+            'payment_method' => (string) $order->getPayment()?->getMethod(),
+        ], $storeId);
     }
 
     /**
      * Seller order lines are new records in Mercur; fulfillments point at
-     * them, so each Magento line remembers its counterpart. Lines are matched
-     * on SKU, which is unique within one seller's order.
+     * them, so each Magento line remembers its counterpart.
      *
      * @param Item[] $items
      */
     public function linkLineItems(string $sellerOrderId, array $items): void
     {
         try {
-            $remote = $this->admin->getOrder($sellerOrderId, 'id,items.id,items.variant_sku');
+            $remote = $this->admin->getOrder($sellerOrderId, 'id,items.id,items.variant_sku,items.offer.id');
         } catch (\Throwable $e) {
             $this->logger->warning('Could not read Mercur seller order lines', ['order' => $sellerOrderId, 'exception' => $e]);
             return;
         }
 
-        $bySku = [];
+        $remoteLines = [];
         foreach ($remote['items'] ?? [] as $line) {
-            $bySku[(string) ($line['variant_sku'] ?? '')] = (string) $line['id'];
+            $remoteLines[] = [
+                'id' => (string) $line['id'],
+                'offer_id' => isset($line['offer']['id']) ? (string) $line['offer']['id'] : (string) ($line['offer_id'] ?? ''),
+                'sku' => (string) ($line['variant_sku'] ?? ''),
+            ];
         }
-        foreach ($items as $item) {
-            if ($item->getData('mercur_order_id') === $sellerOrderId && isset($bySku[(string) $item->getSku()])) {
-                $item->setData('mercur_order_line_item_id', $bySku[(string) $item->getSku()]);
+        $local = [];
+        foreach ($items as $key => $item) {
+            if ($item->getData('mercur_order_id') === $sellerOrderId) {
+                $local[(string) $key] = ['offer_id' => (string) $item->getData('mercur_offer_id'), 'sku' => (string) $item->getSku()];
             }
+        }
+        foreach (LineMatcher::match($remoteLines, $local) as $key => $remoteId) {
+            $items[$key]->setData('mercur_order_line_item_id', $remoteId);
         }
     }
 

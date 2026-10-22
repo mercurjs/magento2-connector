@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mercur\Connector\Model\Task;
 
+use Magento\Framework\Event\ManagerInterface;
 use Mercur\Connector\Model\ResourceModel\Offer as OfferResource;
 use Mercur\Connector\Model\ResourceModel\Seller as SellerResource;
 use Mercur\Connector\Model\Sync\Cursor;
@@ -16,6 +17,7 @@ use Mercur\Process\Model\Process;
 class SellerSync implements TaskInterface
 {
     public const CODE = 'sellers';
+    public const EVENT_IMPORTED = 'mercur_seller_imported';
 
     public function __construct(
         private readonly AdminApi $api,
@@ -23,7 +25,8 @@ class SellerSync implements TaskInterface
         private readonly Cursor $cursor,
         private readonly SellerMapper $mapper,
         private readonly SellerResource $sellers,
-        private readonly OfferResource $offers
+        private readonly OfferResource $offers,
+        private readonly ManagerInterface $events
     ) {
     }
 
@@ -39,14 +42,15 @@ class SellerSync implements TaskInterface
 
     public function execute(Process $process, array $params): void
     {
-        $since = ($params['full'] ?? false) ? null : $this->cursor->get(self::CODE);
+        $full = (bool) ($params['full'] ?? false);
+        $since = $full ? null : $this->cursor->get(self::CODE);
         $process->output($since ? "Delta since $since" : 'Full import');
 
         $count = 0;
         $latest = $this->pager->walk(
             fn (int $offset) => $this->api->listSellers($since, $offset),
             'sellers',
-            function (array $rows) use (&$count): void {
+            function (array $rows) use (&$count, $full): void {
                 $upserts = [];
                 $deleted = [];
                 $paused = [];
@@ -68,6 +72,11 @@ class SellerSync implements TaskInterface
                 $this->offers->setActiveForSellers($paused, false);
                 $this->offers->setActiveForSellers($resumed, true);
                 $this->offers->setActiveForSellers($deleted, false);
+                $this->events->dispatch(self::EVENT_IMPORTED, [
+                    'sellers' => $upserts,
+                    'deleted' => $deleted,
+                    'full' => $full,
+                ]);
                 $count += count($rows);
             }
         );

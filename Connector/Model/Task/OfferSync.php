@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mercur\Connector\Model\Task;
 
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Mercur\Connector\Model\ResourceModel\Offer as OfferResource;
 use Mercur\Connector\Model\ResourceModel\OfferPrice;
@@ -16,11 +17,14 @@ use Mercur\Core\Model\Api\StoreApi;
 use Mercur\Core\Model\Scope\WebsiteScope;
 use Mercur\Process\Api\TaskInterface;
 use Mercur\Process\Model\Process;
+use Psr\Log\LoggerInterface;
 
 class OfferSync implements TaskInterface
 {
     public const CODE = 'offers';
     public const EVENT_IMPORTED = 'mercur_offers_imported';
+    public const EVENT_MAPPED_BEFORE = 'mercur_offer_mapped_before';
+    public const EVENT_MAPPED_AFTER = 'mercur_offer_mapped_after';
 
     private const PRICE_BATCH = 100;
 
@@ -34,7 +38,8 @@ class OfferSync implements TaskInterface
         private readonly OfferResource $offers,
         private readonly OfferPrice $prices,
         private readonly WebsiteScope $websites,
-        private readonly ManagerInterface $events
+        private readonly ManagerInterface $events,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -57,74 +62,142 @@ class OfferSync implements TaskInterface
         $seen = [];
         $skus = [];
         $count = 0;
+        $failed = 0;
+        $priceFailures = 0;
         $latest = $this->pager->walk(
             fn (int $offset) => $this->api->listOffers($since, $offset),
             'offers',
-            function (array $rows) use (&$seen, &$skus, &$count, $process): void {
+            function (array $rows) use (&$seen, &$skus, &$count, &$failed, &$priceFailures, $process): void {
                 $upserts = [];
                 $deleted = [];
                 foreach ($rows as $offer) {
-                    if (!empty($offer['deleted_at'])) {
-                        $deleted[] = $offer['id'];
-                        continue;
+                    try {
+                        if (!empty($offer['deleted_at'])) {
+                            $deleted[] = $offer['id'];
+                            continue;
+                        }
+                        $row = $this->mapRow($offer);
+                        if ($row === null) {
+                            continue;
+                        }
+                        $upserts[] = $row;
+                        $seen[] = $row['offer_id'];
+                        $skus[$row['product_sku']] = true;
+                    } catch (\Throwable $e) {
+                        $failed++;
+                        $id = (string) ($offer['id'] ?? '?');
+                        $process->output("Offer $id skipped: " . $e->getMessage());
+                        $this->logger->warning('Mercur offer import skipped a row', ['offer_id' => $id, 'exception' => $e]);
                     }
-                    $row = $this->mapper->map($offer);
-                    if ($row === null) {
-                        continue;
-                    }
-                    $upserts[] = $row;
-                    $seen[] = $row['offer_id'];
-                    $skus[$row['product_sku']] = true;
+                }
+                foreach ($this->offers->skusForIds($deleted) as $sku) {
+                    $skus[$sku] = true;
                 }
                 $this->offers->upsert($upserts);
                 $this->offers->deleteByIds($deleted);
                 $this->prices->deleteForOffers($deleted);
-                $this->syncPrices(array_column($upserts, 'offer_id'), $process);
+                $priceFailures += $this->syncPrices(array_column($upserts, 'offer_id'), $process);
                 $count += count($rows);
             }
         );
 
         if ($full) {
-            $this->offers->deleteNotIn($seen);
-            $this->prices->deleteOrphans();
+            if ($seen === []) {
+                $process->output('No offers returned by Mercur; keeping the existing rows instead of deleting them all');
+            } else {
+                $this->offers->deleteNotIn($seen);
+                $this->prices->deleteOrphans();
+            }
         }
         if ($latest) {
             $this->cursor->set(self::CODE, $latest);
         }
 
-        $process->output("Processed $count offer(s) across " . count($skus) . ' SKU(s)');
+        $process->output(sprintf(
+            'Processed %d offer(s) across %d SKU(s), %d skipped, %d price batch(es) failed',
+            $count,
+            count($skus),
+            $failed,
+            $priceFailures
+        ));
         $this->events->dispatch(self::EVENT_IMPORTED, ['skus' => array_keys($skus), 'full' => $full]);
+    }
+
+    private function mapRow(array $offer): ?array
+    {
+        $transport = new DataObject(['skip' => false]);
+        $this->events->dispatch(self::EVENT_MAPPED_BEFORE, ['offer' => $offer, 'transport' => $transport]);
+        if ($transport->getData('skip')) {
+            return null;
+        }
+        $row = $this->mapper->map($offer);
+        if ($row === null) {
+            return null;
+        }
+        $mutable = new DataObject($row);
+        $this->events->dispatch(self::EVENT_MAPPED_AFTER, ['row' => $mutable, 'offer' => $offer]);
+
+        return $mutable->getData();
     }
 
     /**
      * Prices every offer once per selling website, from that website's Mercur
-     * region, so price lists and region currencies apply.
+     * region, so price lists and region currencies apply. A failing batch
+     * keeps its previous prices and is counted rather than aborting the run.
      *
      * @param string[] $offerIds
+     * @return int failed batches
      */
-    private function syncPrices(array $offerIds, Process $process): void
+    private function syncPrices(array $offerIds, Process $process): int
     {
+        $failures = 0;
         foreach ($this->websites->all() as $websiteId => $scope) {
             foreach (array_chunk($offerIds, self::PRICE_BATCH) as $batch) {
-                $priced = $this->storeApi->listPricedOffers($batch, $scope['region_id'], $scope['store_id']);
-                $rows = [];
-                foreach ($priced as $offer) {
-                    $row = $this->priceMapper->map($offer, $websiteId, $scope['currency_code']);
-                    if ($row === null) {
-                        $process->output(sprintf(
-                            'Offer %s has no %s price in region %s',
-                            $offer['id'] ?? '?',
-                            $scope['currency_code'],
-                            $scope['region_id']
-                        ));
-                        continue;
-                    }
-                    $rows[] = $row;
+                try {
+                    $this->syncPriceBatch($batch, $websiteId, $scope, $process);
+                } catch (\Throwable $e) {
+                    $failures++;
+                    $process->output(sprintf(
+                        'Price sync failed for %d offer(s) on website %d: %s',
+                        count($batch),
+                        $websiteId,
+                        $e->getMessage()
+                    ));
+                    $this->logger->warning('Mercur offer price batch failed', [
+                        'website_id' => $websiteId,
+                        'offer_ids' => $batch,
+                        'exception' => $e,
+                    ]);
                 }
-                $unpriced = array_values(array_diff($batch, array_column($rows, 'offer_id')));
-                $this->prices->deleteForOffers($unpriced, $websiteId);
-                $this->prices->upsert($rows);
             }
         }
+
+        return $failures;
+    }
+
+    /**
+     * @param string[] $batch
+     * @param array{store_id:int, region_id:string, currency_code:string} $scope
+     */
+    private function syncPriceBatch(array $batch, int $websiteId, array $scope, Process $process): void
+    {
+        $priced = $this->storeApi->listPricedOffers($batch, $scope['region_id'], $scope['store_id']);
+        $rows = [];
+        foreach ($priced as $offer) {
+            $row = $this->priceMapper->map($offer, $websiteId, $scope['currency_code']);
+            if ($row === null) {
+                $process->output(sprintf(
+                    'Offer %s has no %s price in region %s',
+                    $offer['id'] ?? '?',
+                    $scope['currency_code'],
+                    $scope['region_id']
+                ));
+                continue;
+            }
+            $rows[] = $row;
+        }
+        $unpriced = array_values(array_diff($batch, array_column($rows, 'offer_id')));
+        $this->prices->deleteForOffers($unpriced, $websiteId);
+        $this->prices->upsert($rows);
     }
 }

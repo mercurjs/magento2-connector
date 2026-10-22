@@ -33,9 +33,46 @@ class Offer extends AbstractDb
 
     public function deleteNotIn(array $keepIds): void
     {
+        if ($keepIds === []) {
+            return;
+        }
+        $this->getConnection()->delete($this->getMainTable(), ['offer_id NOT IN (?)' => $keepIds]);
+    }
+
+    /**
+     * @param string[] $offerIds
+     * @return string[] distinct SKUs the offers sell
+     */
+    public function skusForIds(array $offerIds): array
+    {
+        if ($offerIds === []) {
+            return [];
+        }
         $connection = $this->getConnection();
-        $where = $keepIds === [] ? [] : ['offer_id NOT IN (?)' => $keepIds];
-        $connection->delete($this->getMainTable(), $where);
+        $select = $connection->select()
+            ->distinct()
+            ->from($this->getMainTable(), ['product_sku'])
+            ->where('offer_id IN (?)', $offerIds);
+
+        return array_map('strval', $connection->fetchCol($select));
+    }
+
+    /**
+     * @param string[] $sellerIds
+     * @return string[] distinct SKUs the sellers offer
+     */
+    public function skusForSellers(array $sellerIds): array
+    {
+        if ($sellerIds === []) {
+            return [];
+        }
+        $connection = $this->getConnection();
+        $select = $connection->select()
+            ->distinct()
+            ->from($this->getMainTable(), ['product_sku'])
+            ->where('seller_id IN (?)', $sellerIds);
+
+        return array_map('strval', $connection->fetchCol($select));
     }
 
     /**

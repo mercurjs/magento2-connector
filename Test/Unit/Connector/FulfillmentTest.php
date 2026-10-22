@@ -23,6 +23,17 @@ final class FulfillmentTest extends TestCase
         self::assertSame('returned', $resolver->resolve(['quantity' => 2, 'detail' => ['return_received_quantity' => 1]]));
     }
 
+    public function testASellerCancelingItsOwnOrderIsARefusal(): void
+    {
+        self::assertSame('refused', StatusResolver::cancelStatus('sel_1', 'sel_1'));
+        self::assertSame('canceled', StatusResolver::cancelStatus('user_1', 'sel_1'));
+        self::assertSame('canceled', StatusResolver::cancelStatus(null, 'sel_1'));
+        self::assertSame('canceled', StatusResolver::cancelStatus('', ''));
+        self::assertTrue(StatusResolver::isCanceled('refused'));
+        self::assertTrue(StatusResolver::isCanceled('canceled'));
+        self::assertFalse(StatusResolver::isCanceled('shipped'));
+    }
+
     public function testOneShipmentPerShippedFulfillmentWithOnlyItsLines(): void
     {
         $order = ['fulfillments' => [

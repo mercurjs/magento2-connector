@@ -14,30 +14,53 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="api_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
+                <field id="api_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Mercur API URL</label>
                     <comment>Base URL of the Mercur API, for example https://api.example.com</comment>
                 </field>
-                <field id="api_key" translate="label comment" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
+                <field id="api_key" translate="label comment" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Admin API key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <comment>A secret admin API key bound to a role that holds the integrations permission.</comment>
                 </field>
-                <field id="publishable_key" translate="label comment" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1">
+                <field id="publishable_key" translate="label comment" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Publishable API key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <comment>Used for the shadow cart during checkout.</comment>
                 </field>
-                <field id="sales_channel_id" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1">
+                <field id="sales_channel_id" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Mercur sales channel ID</label>
                 </field>
                 <field id="region_id" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Mercur region ID</label>
                     <comment>The Mercur region whose prices this website shows.</comment>
                 </field>
-                <field id="timeout" translate="label" type="text" sortOrder="70" showInDefault="1">
+                <field id="channel" translate="label comment" type="text" sortOrder="65" showInDefault="1" showInWebsite="1">
+                    <label>Channel</label>
+                    <comment>Sent as the channel of orders and carts placed from this website. Leave as magento unless the Mercur plugin is configured otherwise.</comment>
+                </field>
+                <field id="timeout" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1">
                     <label>Request timeout (seconds)</label>
                     <validate>validate-digits</validate>
+                </field>
+                <field id="retries" translate="label comment" type="text" sortOrder="71" showInDefault="1" showInWebsite="1">
+                    <label>Retries</label>
+                    <comment>How many times a failed call is repeated. Only reads, deletes and calls marked idempotent are retried.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="retry_delay_ms" translate="label comment" type="text" sortOrder="72" showInDefault="1" showInWebsite="1">
+                    <label>Retry delay (ms)</label>
+                    <comment>Base delay before the first retry; it doubles on every further attempt.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="log_level" translate="label comment" type="select" sortOrder="73" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API log level</label>
+                    <source_model>Mercur\Core\Model\Config\Source\LogLevel</source_model>
+                    <comment>Written to var/log/mercur.log. Credentials are always masked.</comment>
+                </field>
+                <field id="test_connection" translate="label" type="button" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Connection check</label>
+                    <frontend_model>Mercur\Core\Block\Adminhtml\System\Config\TestConnection</frontend_model>
                 </field>
             </group>
             <group id="offers" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
@@ -75,12 +98,39 @@
                     <validate>validate-digits</validate>
                 </field>
             </group>
+            <group id="checkout" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Checkout</label>
+                <field id="shipping_prices_include_tax" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Seller shipping prices include tax</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Seller shipping is taxed with the shipping tax class from Sales &gt; Tax. Set to Yes when sellers quote gross amounts.</comment>
+                </field>
+                <field id="auto_remove_unavailable" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Remove unavailable seller lines automatically</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Yes drops a line whose offer was withdrawn and tells the shopper. No keeps it in the cart and blocks checkout until the shopper removes it.</comment>
+                </field>
+            </group>
+            <group id="order" translate="label" type="text" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Orders</label>
+                <field id="auto_create_statuses" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Create in Mercur when the order status is</label>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                    <comment>The order is sent once it is committed in one of these statuses. Orders left behind are retried on the order retry schedule.</comment>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+            </group>
             <group id="webhook" translate="label" type="text" sortOrder="30" showInDefault="1">
                 <label>Webhooks</label>
                 <field id="secret" translate="label comment" type="obscure" sortOrder="10" showInDefault="1">
                     <label>Signing secret</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <comment>Shown once in Mercur when the endpoint is created. The endpoint URL is {base_url}/mercur/webhook.</comment>
+                </field>
+                <field id="max_age_sec" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <label>Maximum event age (seconds)</label>
+                    <comment>Events whose created_at is older than this are acknowledged but ignored. 0 disables the check.</comment>
+                    <validate>validate-digits</validate>
                 </field>
             </group>
             <group id="sync" translate="label" type="text" sortOrder="40" showInDefault="1">
@@ -103,8 +153,27 @@
                 <field id="order_retry_cron" translate="label" type="text" sortOrder="46" showInDefault="1">
                     <label>Order retry schedule (cron)</label>
                 </field>
-                <field id="page_size" translate="label" type="text" sortOrder="50" showInDefault="1">
+                <field id="page_size" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1">
                     <label>Page size</label>
+                    <validate>validate-digits</validate>
+                </field>
+            </group>
+            <group id="process" translate="label comment" type="text" sortOrder="50" showInDefault="1">
+                <label>Processes</label>
+                <comment>Background work queued by the connector and run by cron.</comment>
+                <field id="timeout_sec" translate="label comment" type="text" sortOrder="10" showInDefault="1">
+                    <label>Timeout (seconds)</label>
+                    <comment>A running process with no output for this long is marked as timed out.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="max_attempts" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <label>Maximum attempts</label>
+                    <comment>How often a process that asked to be retried is rescheduled before it fails.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="history_days" translate="label comment" type="text" sortOrder="30" showInDefault="1">
+                    <label>Keep history (days)</label>
+                    <comment>Finished processes older than this are deleted by the daily cleanup.</comment>
                     <validate>validate-digits</validate>
                 </field>
             </group>

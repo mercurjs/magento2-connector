@@ -1,0 +1,28 @@
+<?php
+/** @var \Mercur\Process\Block\Adminhtml\Process\Toolbar $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<div class="admin__data-grid-header mercur-process-toolbar" style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;">
+    <?php if ($block->canRun()): ?>
+        <form method="post" action="<?= $escaper->escapeUrl($block->getRunUrl()) ?>" style="display:flex;gap:.5rem;align-items:center;">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+            <label for="mercur-process-task"><?= $escaper->escapeHtml(__('Run task')) ?></label>
+            <select id="mercur-process-task" name="code" class="admin__control-select">
+                <?php foreach ($block->getTasks() as $code => $name): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($code) ?>"><?= $escaper->escapeHtml($name) ?> (<?= $escaper->escapeHtml($code) ?>)</option>
+                <?php endforeach; ?>
+            </select>
+            <label class="admin__field-option">
+                <input type="checkbox" name="full" value="1" class="admin__control-checkbox"/>
+                <span><?= $escaper->escapeHtml(__('Full')) ?></span>
+            </label>
+            <button type="submit" class="action-secondary"><?= $escaper->escapeHtml(__('Run now')) ?></button>
+        </form>
+    <?php endif; ?>
+    <?php if ($block->canDelete()): ?>
+        <form method="post" action="<?= $escaper->escapeUrl($block->getClearHistoryUrl()) ?>" onsubmit="return window.confirm('<?= $escaper->escapeJs(__('Delete every finished process older than the configured retention?')) ?>');">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+            <button type="submit" class="action-secondary"><?= $escaper->escapeHtml(__('Clear history')) ?></button>
+        </form>
+    <?php endif; ?>
+</div>

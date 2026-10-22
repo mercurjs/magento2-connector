@@ -12,6 +12,7 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Mercur\Connector\Model\Webhook\Dispatcher;
+use Mercur\Connector\Model\Webhook\EventLog;
 use Mercur\Connector\Model\Webhook\Signature;
 use Mercur\Core\Model\Config;
 use Psr\Log\LoggerInterface;
@@ -27,6 +28,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         private readonly Json $json,
         private readonly Signature $signature,
         private readonly Dispatcher $dispatcher,
+        private readonly EventLog $eventLog,
         private readonly Config $config,
         private readonly LoggerInterface $logger
     ) {
@@ -36,9 +38,8 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
     {
         $result = $this->jsonFactory->create();
         $body = (string) $this->request->getContent();
-        $header = $this->request->getHeader('x-mercur-signature') ?: null;
 
-        if (!$this->signature->verify($body, $this->config->getWebhookSecret(), is_string($header) ? $header : null)) {
+        if (!$this->signature->verify($body, $this->config->getWebhookSecret(), $this->header('x-mercur-signature'))) {
             return $result->setHttpResponseCode(401)->setData(['error' => 'invalid signature']);
         }
 
@@ -47,14 +48,29 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         } catch (\InvalidArgumentException) {
             return $result->setHttpResponseCode(400)->setData(['error' => 'invalid json']);
         }
+        if (!is_array($payload)) {
+            return $result->setHttpResponseCode(400)->setData(['error' => 'invalid json']);
+        }
 
-        $event = (string) ($payload['event'] ?? $this->request->getHeader('x-mercur-event') ?? '');
+        $event = (string) ($payload['event'] ?? $this->header('x-mercur-event') ?? '');
         $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
+        $eventId = EventLog::eventId($this->header('x-mercur-delivery'), $payload, $body);
+
+        if (EventLog::isStale($payload, $this->config->getWebhookMaxAgeSec())) {
+            $this->logger->info('Mercur webhook ignored as stale', ['event' => $event, 'id' => $eventId]);
+
+            return $result->setData(['received' => true, 'event' => $event, 'stale' => true]);
+        }
+
+        if (!$this->eventLog->markReceived($eventId, $event)) {
+            return $result->setData(['received' => true, 'event' => $event, 'duplicate' => true]);
+        }
 
         try {
             $this->dispatcher->dispatch($event, $data);
         } catch (\Throwable $e) {
-            $this->logger->error('Mercur webhook handling failed', ['event' => $event, 'exception' => $e]);
+            $this->eventLog->forget($eventId);
+            $this->logger->error('Mercur webhook handling failed', ['event' => $event, 'id' => $eventId, 'exception' => $e]);
 
             return $result->setHttpResponseCode(500)->setData(['error' => 'handler failed']);
         }
@@ -70,5 +86,12 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return true;
+    }
+
+    private function header(string $name): ?string
+    {
+        $value = $this->request->getHeader($name);
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

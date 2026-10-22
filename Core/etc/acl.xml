@@ -6,8 +6,12 @@
                 <resource id="Mercur_Core::mercur" title="Mercur" sortOrder="80">
                     <resource id="Mercur_Core::sellers" title="Sellers" sortOrder="5"/>
                     <resource id="Mercur_Core::offers" title="Offers" sortOrder="6"/>
+                    <resource id="Mercur_Core::orders" title="Order actions" sortOrder="7"/>
                     <resource id="Mercur_Core::config" title="Configuration" sortOrder="10"/>
-                    <resource id="Mercur_Core::process" title="Processes" sortOrder="20"/>
+                    <resource id="Mercur_Core::process" title="Processes" sortOrder="20">
+                        <resource id="Mercur_Core::process_run" title="Run and stop processes" sortOrder="10"/>
+                        <resource id="Mercur_Core::process_delete" title="Delete processes and clear history" sortOrder="20"/>
+                    </resource>
                 </resource>
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">

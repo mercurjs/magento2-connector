@@ -9,6 +9,8 @@ use Mercur\Process\Model\Runner;
 
 /**
  * Catalog events only enqueue the matching delta task; the next cron tick runs it.
+ * The payload is deliberately dropped so a burst of webhooks collapses into one
+ * pending run.
  */
 class EnqueueSync implements HandlerInterface
 {
@@ -20,6 +22,6 @@ class EnqueueSync implements HandlerInterface
 
     public function handle(string $event, array $data): void
     {
-        $this->runner->enqueue($this->task, ['event' => $event, 'id' => $data['id'] ?? null]);
+        $this->runner->enqueueOnce($this->task);
     }
 }

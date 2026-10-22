@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer id="mercur_offer_product" view_id="mercur_offer_product" class="Mercur\OfferIndexer\Model\Indexer\Action">
+        <title translate="true">Mercur Offers</title>
+        <description translate="true">Best way to buy each SKU across the operator's stock and Mercur seller offers, per website</description>
+    </indexer>
+</config>

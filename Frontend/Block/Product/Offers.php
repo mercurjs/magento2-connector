@@ -6,14 +6,16 @@ namespace Mercur\Frontend\Block\Product;
 
 use Magento\Catalog\Block\Product\Context;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Framework\Pricing\Helper\Data as PriceHelper;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Element\Template;
 use Mercur\Connector\Model\Delivery\DeliveryEstimate;
+use Mercur\Connector\Model\Inventory\ProductSalability;
 use Mercur\Connector\Model\Offer;
 use Mercur\Connector\Model\SellerUrl;
 use Mercur\Core\Model\Config;
+use Mercur\Frontend\Model\OfferPriceView;
 use Mercur\OfferIndexer\Model\BuyBox;
 
 /**
@@ -30,7 +32,7 @@ class Offers extends Template
         private readonly Registry $registry,
         private readonly BuyBox $buyBox,
         private readonly Config $config,
-        private readonly PriceHelper $priceHelper,
+        private readonly OfferPriceView $priceView,
         private readonly DeliveryEstimate $delivery,
         private readonly SellerUrl $sellerUrl,
         array $data = []
@@ -116,9 +118,70 @@ class Offers extends Template
         return $summary !== null && $summary['best_offer_id'] === null && (bool) $summary['operator_available'];
     }
 
-    public function formatPrice(float $amount): string
+    /**
+     * Tax-aware, in the display currency, for the product the offer sells.
+     */
+    public function formatPrice(float $amount, ?Product $product = null): string
     {
-        return (string) $this->priceHelper->currency($amount, true, false);
+        $product ??= $this->getProduct();
+
+        return $product ? $this->priceView->formatted($product, $amount) : $this->priceView->format($amount);
+    }
+
+    public function formatPriceExcludingTax(float $amount, ?Product $product = null): ?string
+    {
+        $product ??= $this->getProduct();
+        if (!$product || !$this->priceView->showsBoth()) {
+            return null;
+        }
+
+        return $this->priceView->format($this->priceView->amountExcludingTax($product, $amount));
+    }
+
+    public function isOperatorAvailable(): bool
+    {
+        $product = $this->getProduct();
+        if (!$product || $product->getTypeId() === Configurable::TYPE_CODE) {
+            return false;
+        }
+        $salable = (bool) $product->isSalable();
+
+        return $product->hasData(ProductSalability::OWN_SALABLE) ? (bool) $product->getData(ProductSalability::OWN_SALABLE) : $salable;
+    }
+
+    public function getOperatorPrice(): ?float
+    {
+        $product = $this->getProduct();
+        if (!$product) {
+            return null;
+        }
+        $amount = (float) $product->getPriceInfo()->getPrice(FinalPrice::PRICE_CODE)->getAmount()->getValue();
+
+        return $amount > 0 ? $amount : null;
+    }
+
+    /**
+     * Per-child buy box facts the variant scripts read to filter rows and
+     * route the main form to a seller offer.
+     *
+     * @return string JSON keyed by child product id
+     */
+    public function getChildrenJson(): string
+    {
+        $children = [];
+        foreach ($this->getRows() as $row) {
+            $child = $row['child'];
+            if ($child === null || isset($children[(string) $child->getId()])) {
+                continue;
+            }
+            $summary = $this->getSummary((string) $child->getSku());
+            $children[(string) $child->getId()] = [
+                'operator_available' => (int) ($summary['operator_available'] ?? 0),
+                'best_offer_id' => $summary['best_offer_id'] ?? null,
+            ];
+        }
+
+        return (string) json_encode($children);
     }
 
     public function getOperatorLabel(): string
@@ -139,7 +202,7 @@ class Offers extends Template
     /**
      * @return string[] "Buy 10+ for $20.00" lines, cheapest last
      */
-    public function getTierLabels(Offer $offer): array
+    public function getTierLabels(Offer $offer, ?Product $product = null): array
     {
         $labels = [];
         foreach ($offer->getPriceRanges() as $range) {
@@ -147,7 +210,7 @@ class Offers extends Template
             if ($amount >= $offer->getPrice() || empty($range['min_quantity'])) {
                 continue;
             }
-            $labels[] = (string) __('Buy %1+ for %2 each', (int) $range['min_quantity'], $this->formatPrice($amount));
+            $labels[] = (string) __('Buy %1+ for %2 each', (int) $range['min_quantity'], $this->formatPrice($amount, $product));
         }
 
         return $labels;

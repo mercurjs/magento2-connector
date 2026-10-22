@@ -2,12 +2,21 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="mercur_process" resource="default" engine="innodb" comment="Mercur Process">
         <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true" comment="ID"/>
+        <column xsi:type="int" name="parent_id" unsigned="true" nullable="true" comment="Parent process ID"/>
         <column xsi:type="varchar" name="code" nullable="false" length="64" comment="Task code"/>
         <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Name"/>
         <column xsi:type="varchar" name="status" nullable="false" length="32" default="pending" comment="Status"/>
+        <column xsi:type="varchar" name="hash" nullable="true" length="40" comment="Code and params hash"/>
         <column xsi:type="text" name="params" nullable="true" comment="JSON params"/>
         <column xsi:type="longtext" name="output" nullable="true" comment="Output log"/>
+        <column xsi:type="smallint" name="attempts" unsigned="true" nullable="false" default="0" comment="Attempts"/>
+        <column xsi:type="smallint" name="max_attempts" unsigned="true" nullable="false" default="3" comment="Max attempts"/>
+        <column xsi:type="int" name="timeout_sec" unsigned="true" nullable="true" comment="Timeout in seconds"/>
         <column xsi:type="int" name="duration" unsigned="true" nullable="true" comment="Duration in seconds"/>
+        <column xsi:type="varchar" name="locked_by" nullable="true" length="64" comment="Runner that claimed the process"/>
+        <column xsi:type="timestamp" name="locked_at" nullable="true" comment="Claimed"/>
+        <column xsi:type="timestamp" name="last_output_at" nullable="true" comment="Last output"/>
+        <column xsi:type="timestamp" name="next_run_at" nullable="true" comment="Not before"/>
         <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
         <column xsi:type="timestamp" name="started_at" nullable="true" comment="Started"/>
         <column xsi:type="timestamp" name="finished_at" nullable="true" comment="Finished"/>
@@ -20,6 +29,17 @@
         </index>
         <index referenceId="MERCUR_PROCESS_CODE" indexType="btree">
             <column name="code"/>
+        </index>
+        <index referenceId="MERCUR_PROCESS_HASH_STATUS" indexType="btree">
+            <column name="hash"/>
+            <column name="status"/>
+        </index>
+        <index referenceId="MERCUR_PROCESS_PARENT_ID" indexType="btree">
+            <column name="parent_id"/>
+        </index>
+        <index referenceId="MERCUR_PROCESS_STATUS_NEXT_RUN_AT" indexType="btree">
+            <column name="status"/>
+            <column name="next_run_at"/>
         </index>
     </table>
 </schema>

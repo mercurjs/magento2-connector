@@ -9,6 +9,7 @@ use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Mercur\Connector\Model\Checkout\ShadowCart;
 
 /**
@@ -35,7 +36,11 @@ class Choose implements HttpPostActionInterface
         }
 
         $quote = $this->session->getQuote();
-        $this->shadowCart->chooseShippingMethod($quote, $sellerId, $optionId);
+        try {
+            $this->shadowCart->chooseShippingMethod($quote, $sellerId, $optionId);
+        } catch (LocalizedException $e) {
+            return $result->setHttpResponseCode(400)->setData(['error' => $e->getMessage()]);
+        }
         $quote->setTotalsCollectedFlag(false);
 
         return $result->setData(['ok' => true]);

@@ -36,6 +36,7 @@
         <column xsi:type="boolean" name="manage_inventory" nullable="false" default="true" comment="Manage inventory"/>
         <column xsi:type="smallint" name="leadtime_to_ship" unsigned="true" nullable="true" comment="Lead time to ship"/>
         <column xsi:type="varchar" name="condition_code" nullable="true" length="64" comment="Condition"/>
+        <column xsi:type="varchar" name="condition_label" nullable="true" length="255" comment="Condition label"/>
         <column xsi:type="boolean" name="active" nullable="false" default="true" comment="Active"/>
         <column xsi:type="timestamp" name="updated_at" nullable="true" comment="Mercur updated at"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -66,6 +67,7 @@
     <table name="quote">
         <column xsi:type="varchar" name="mercur_cart_id" nullable="true" length="64" comment="Mercur shadow cart ID"/>
         <column xsi:type="text" name="mercur_shipping_methods" nullable="true" comment="Chosen Mercur shipping option per seller JSON"/>
+        <column xsi:type="varchar" name="mercur_sync_hash" nullable="true" length="40" comment="Fingerprint of the last Mercur shipping quote"/>
     </table>
     <table name="quote_item">
         <column xsi:type="varchar" name="mercur_offer_id" nullable="true" length="64" comment="Mercur offer ID"/>
@@ -75,6 +77,11 @@
     <table name="quote_address">
         <column xsi:type="decimal" name="mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping"/>
         <column xsi:type="decimal" name="base_mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping"/>
+        <column xsi:type="decimal" name="mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping tax"/>
+        <column xsi:type="decimal" name="mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Marketplace shipping incl. tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Base marketplace shipping incl. tax"/>
+        <column xsi:type="varchar" name="mercur_shipping_error" nullable="true" length="255" comment="Why the marketplace shipping could not be quoted"/>
     </table>
     <table name="sales_order">
         <column xsi:type="varchar" name="mercur_cart_id" nullable="true" length="64" comment="Mercur shadow cart ID"/>
@@ -86,6 +93,12 @@
         <column xsi:type="decimal" name="mercur_shipping_refunded" scale="4" precision="20" nullable="true" comment="Marketplace shipping refunded"/>
         <column xsi:type="decimal" name="base_mercur_shipping_refunded" scale="4" precision="20" nullable="true" comment="Base marketplace shipping refunded"/>
         <column xsi:type="text" name="mercur_shipping_methods" nullable="true" comment="Chosen Mercur shipping option per seller JSON"/>
+        <column xsi:type="decimal" name="mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping tax"/>
+        <column xsi:type="decimal" name="mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Marketplace shipping incl. tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Base marketplace shipping incl. tax"/>
+        <column xsi:type="timestamp" name="mercur_sent_at" nullable="true" comment="When the order was created in Mercur"/>
+        <column xsi:type="timestamp" name="mercur_captured_at" nullable="true" comment="When the payment capture was confirmed to Mercur"/>
     </table>
     <table name="sales_order_item">
         <column xsi:type="varchar" name="mercur_offer_id" nullable="true" length="64" comment="Mercur offer ID"/>
@@ -94,6 +107,7 @@
         <column xsi:type="varchar" name="mercur_order_id" nullable="true" length="64" comment="Mercur seller order ID"/>
         <column xsi:type="varchar" name="mercur_status" nullable="true" length="32" comment="Mercur fulfillment status"/>
         <column xsi:type="varchar" name="mercur_order_line_item_id" nullable="true" length="64" comment="Mercur seller order line item ID"/>
+        <column xsi:type="varchar" name="mercur_cancel_reason" nullable="true" length="32" comment="Why the Mercur seller order line was canceled"/>
         <index referenceId="SALES_ORDER_ITEM_MERCUR_ORDER_ID" indexType="btree">
             <column name="mercur_order_id"/>
         </index>
@@ -104,10 +118,18 @@
     <table name="sales_invoice">
         <column xsi:type="decimal" name="mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping"/>
         <column xsi:type="decimal" name="base_mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping"/>
+        <column xsi:type="decimal" name="mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping tax"/>
+        <column xsi:type="decimal" name="mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Marketplace shipping incl. tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Base marketplace shipping incl. tax"/>
     </table>
     <table name="sales_creditmemo">
         <column xsi:type="decimal" name="mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping"/>
         <column xsi:type="decimal" name="base_mercur_shipping_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping"/>
+        <column xsi:type="decimal" name="mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Marketplace shipping tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_tax_amount" scale="4" precision="20" nullable="true" comment="Base marketplace shipping tax"/>
+        <column xsi:type="decimal" name="mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Marketplace shipping incl. tax"/>
+        <column xsi:type="decimal" name="base_mercur_shipping_incl_tax" scale="4" precision="20" nullable="true" comment="Base marketplace shipping incl. tax"/>
         <column xsi:type="varchar" name="mercur_refund_id" nullable="true" length="64" comment="Mercur refund ID"/>
         <column xsi:type="boolean" name="mercur_reported" nullable="false" default="false" comment="Already known to Mercur"/>
         <index referenceId="SALES_CREDITMEMO_MERCUR_REFUND_ID" indexType="btree">
@@ -118,6 +140,17 @@
         <column xsi:type="varchar" name="mercur_fulfillment_id" nullable="true" length="64" comment="Mercur fulfillment ID"/>
         <index referenceId="SALES_SHIPMENT_MERCUR_FULFILLMENT_ID" indexType="btree">
             <column name="mercur_fulfillment_id"/>
+        </index>
+    </table>
+    <table name="mercur_webhook_event" resource="default" engine="innodb" comment="Mercur webhook deliveries already handled">
+        <column xsi:type="varchar" name="event_id" nullable="false" length="64" comment="Delivery or event ID"/>
+        <column xsi:type="varchar" name="event" nullable="false" length="64" comment="Event name"/>
+        <column xsi:type="timestamp" name="received_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Received"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="event_id"/>
+        </constraint>
+        <index referenceId="MERCUR_WEBHOOK_EVENT_RECEIVED_AT" indexType="btree">
+            <column name="received_at"/>
         </index>
     </table>
 </schema>

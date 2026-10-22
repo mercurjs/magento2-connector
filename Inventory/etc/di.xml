@@ -10,4 +10,10 @@
     <type name="Magento\InventoryShipping\Model\GetItemsToDeductFromShipment">
         <plugin name="mercur_skip_marketplace_source_deduction" type="Mercur\Inventory\Plugin\SkipMarketplaceSourceDeduction"/>
     </type>
+    <type name="Magento\InventoryIndexer\Model\ResourceModel\AddStockDataToCollection">
+        <plugin name="mercur_include_offered_products_in_stock_data" type="Mercur\Inventory\Plugin\Stock\IncludeOfferedProductsInStockData"/>
+    </type>
+    <type name="Magento\InventoryIndexer\Model\ResourceModel\AddIsInStockFilterToCollection">
+        <plugin name="mercur_include_offered_products_in_salable_filter" type="Mercur\Inventory\Plugin\Stock\IncludeOfferedProductsInSalableFilter"/>
+    </type>
 </config>

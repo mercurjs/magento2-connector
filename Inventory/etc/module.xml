@@ -5,6 +5,7 @@
             <module name="Mercur_Connector"/>
             <module name="Magento_InventorySales"/>
             <module name="Magento_InventoryShipping"/>
+            <module name="Magento_InventoryIndexer"/>
         </sequence>
     </module>
 </config>

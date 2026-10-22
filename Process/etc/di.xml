@@ -4,6 +4,8 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="mercur_sync" xsi:type="object">Mercur\Process\Console\Command\RunCommand</item>
+                <item name="mercur_process_run" xsi:type="object">Mercur\Process\Console\Command\RunProcessCommand</item>
+                <item name="mercur_process_clear_history" xsi:type="object">Mercur\Process\Console\Command\ClearHistoryCommand</item>
             </argument>
         </arguments>
     </type>

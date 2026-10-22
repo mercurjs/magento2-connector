@@ -97,6 +97,17 @@ class Offer extends AbstractModel
         return $best;
     }
 
+    public function getConditionLabel(): ?string
+    {
+        $label = (string) $this->getData('condition_label');
+        if ($label !== '') {
+            return $label;
+        }
+        $code = (string) $this->getData('condition_code');
+
+        return $code === '' ? null : $code;
+    }
+
     public function getSellerName(): string
     {
         return (string) $this->getData('seller_name');

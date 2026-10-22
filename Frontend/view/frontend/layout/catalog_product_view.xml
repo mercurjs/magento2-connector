@@ -4,6 +4,9 @@
         <css src="Mercur_Frontend::css/offers.css"/>
     </head>
     <body>
+        <referenceContainer name="product.info.form.content">
+            <block class="Magento\Framework\View\Element\Template" name="mercur.product.offer.input" template="Mercur_Frontend::product/offer-input.phtml"/>
+        </referenceContainer>
         <referenceContainer name="product.info.main">
             <block class="Mercur\Frontend\Block\Product\Offers" name="mercur.product.offers" template="Mercur_Frontend::product/offers.phtml" after="product.info.addtocart"/>
         </referenceContainer>

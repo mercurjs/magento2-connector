@@ -56,6 +56,7 @@ class ProductOffers implements ResolverInterface
                 'leadtime_to_ship' => $offer->getLeadtimeToShip(),
                 'estimated_delivery' => $this->delivery->estimateDates($offer->getLeadtimeToShip(), $storeId),
                 'condition_code' => $offer->getData('condition_code'),
+                'condition_label' => $offer->getConditionLabel(),
                 'is_best' => $best === $offer->getOfferId(),
             ];
         }

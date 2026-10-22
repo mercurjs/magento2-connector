@@ -1,0 +1,92 @@
+<?php
+/** @var \Mercur\Process\Block\Adminhtml\Process\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$process = $block->getProcess();
+$rows = [
+    __('Task') => $process->getCode(),
+    __('Name') => (string) $process->getData('name'),
+    __('Status') => $block->getStatusLabel($process->getStatus()),
+    __('Attempts') => $process->getAttempts() . ' / ' . $process->getMaxAttempts(),
+    __('Created') => $block->formatStamp($process->getData('created_at')),
+    __('Started') => $block->formatStamp($process->getData('started_at')),
+    __('Finished') => $block->formatStamp($process->getData('finished_at')),
+    __('Next run') => $block->formatStamp($process->getData('next_run_at')),
+    __('Duration') => $process->getData('duration') !== null ? $process->getData('duration') . ' s' : '—',
+    __('Runner') => (string) ($process->getData('locked_by') ?: '—'),
+];
+?>
+<div class="mercur-process-view">
+    <div class="page-actions" style="margin-bottom:1.5rem;display:flex;gap:.5rem;">
+        <a class="action-secondary" href="<?= $escaper->escapeUrl($block->getUrl('mercur/process/index')) ?>"><?= $escaper->escapeHtml(__('Back')) ?></a>
+        <?php if ($block->getParentUrl()): ?>
+            <a class="action-secondary" href="<?= $escaper->escapeUrl($block->getParentUrl()) ?>"><?= $escaper->escapeHtml(__('Parent process')) ?></a>
+        <?php endif; ?>
+        <a class="action-secondary" href="<?= $escaper->escapeUrl($block->getActionUrl('download')) ?>"><?= $escaper->escapeHtml(__('Download output')) ?></a>
+        <?php if ($block->canRun() && $process->isRunnable()): ?>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('run')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                <button type="submit" class="action-primary"><?= $escaper->escapeHtml(__('Run now')) ?></button>
+            </form>
+        <?php endif; ?>
+        <?php if ($block->canRun() && $process->isFinished()): ?>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('run')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                <button type="submit" class="action-secondary"><?= $escaper->escapeHtml(__('Run again')) ?></button>
+            </form>
+        <?php endif; ?>
+        <?php if ($block->canRun() && $process->isActive()): ?>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('cancel')) ?>">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                <button type="submit" class="action-secondary"><?= $escaper->escapeHtml(__('Stop')) ?></button>
+            </form>
+        <?php endif; ?>
+        <?php if ($block->canDelete() && $process->getStatus() !== 'processing'): ?>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getActionUrl('delete')) ?>" onsubmit="return window.confirm('<?= $escaper->escapeJs(__('Delete this process?')) ?>');">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
+                <button type="submit" class="action-secondary"><?= $escaper->escapeHtml(__('Delete')) ?></button>
+            </form>
+        <?php endif; ?>
+    </div>
+
+    <table class="admin__table-secondary" style="max-width:640px;margin-bottom:1.5rem;">
+        <tbody>
+        <?php foreach ($rows as $label => $value): ?>
+            <tr>
+                <th scope="row"><?= $escaper->escapeHtml($label) ?></th>
+                <td><?= $escaper->escapeHtml($value) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <?php if ($block->getParamsJson() !== ''): ?>
+        <h2><?= $escaper->escapeHtml(__('Parameters')) ?></h2>
+        <pre class="mercur-process-params" style="white-space:pre-wrap;"><?= $escaper->escapeHtml($block->getParamsJson()) ?></pre>
+    <?php endif; ?>
+
+    <?php $children = $block->getChildren(); ?>
+    <?php if ($children !== []): ?>
+        <h2><?= $escaper->escapeHtml(__('Child processes')) ?></h2>
+        <table class="admin__table-secondary" style="max-width:640px;margin-bottom:1.5rem;">
+            <thead>
+            <tr>
+                <th><?= $escaper->escapeHtml(__('ID')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Task')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($children as $child): ?>
+                <tr>
+                    <td><a href="<?= $escaper->escapeUrl($block->getUrl('mercur/process/view', ['id' => $child->getId()])) ?>">#<?= (int) $child->getId() ?></a></td>
+                    <td><?= $escaper->escapeHtml($child->getCode()) ?></td>
+                    <td><?= $escaper->escapeHtml($block->getStatusLabel($child->getStatus())) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+
+    <h2><?= $escaper->escapeHtml(__('Output')) ?></h2>
+    <pre class="mercur-process-output" style="white-space:pre-wrap;max-height:60vh;overflow:auto;background:#f5f5f5;padding:1rem;"><?= $escaper->escapeHtml((string) ($process->getData('output') ?: __('No output yet.'))) ?></pre>
+</div>

@@ -92,6 +92,7 @@ class MarketplaceOrderView
             StatusResolver::RETURN_REQUESTED => (string) __('Return requested'),
             StatusResolver::RETURNED => (string) __('Returned'),
             StatusResolver::CANCELED => (string) __('Canceled'),
+            StatusResolver::REFUSED => (string) __('Refused by seller'),
             default => (string) __('Processing'),
         };
     }

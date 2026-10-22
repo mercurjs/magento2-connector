@@ -1,0 +1,23 @@
+<?php
+/** @var \Mercur\Frontend\Block\Product\ListingPrice $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$product = $block->getProduct();
+$productId = (int) $product->getId();
+$suffix = (string) $block->getData('id_suffix');
+$amount = $block->getAmount();
+?>
+<div class="price-box price-final_price mercur-listing-price" data-role="priceBox" data-product-id="<?= $productId ?>" data-price-box="product-id-<?= $productId ?>">
+    <?php if ($block->isFrom()): ?>
+        <span class="price-label"><?= $escaper->escapeHtml(__('From')) ?></span>
+    <?php endif; ?>
+    <span class="price-container price-final_price tax weee">
+        <span id="product-price-<?= $productId . $escaper->escapeHtmlAttr($suffix) ?>" data-price-amount="<?= $escaper->escapeHtmlAttr((string) $amount) ?>" data-price-type="finalPrice" class="price-wrapper">
+            <span class="price"><?= /* @noEscape */ $block->format($amount) ?></span>
+        </span>
+        <?php if ($block->showsBoth()): ?>
+            <span class="price-including-tax" data-label="<?= $escaper->escapeHtmlAttr(__('Incl. Tax')) ?>"><?= /* @noEscape */ $block->format($amount) ?></span>
+            <span class="price-excluding-tax" data-label="<?= $escaper->escapeHtmlAttr(__('Excl. Tax')) ?>"><?= /* @noEscape */ $block->format($block->getAmountExcludingTax()) ?></span>
+        <?php endif; ?>
+    </span>
+</div>

@@ -6,6 +6,7 @@
                 <renderer name="adminhtml" instance="Magento\Sales\Block\Adminhtml\Order\Create\Totals\DefaultTotals"/>
                 <renderer name="frontend" instance="Magento\Checkout\Block\Cart\Totals\DefaultTotals"/>
             </item>
+            <item name="mercur_shipping_tax" instance="Mercur\Connector\Model\Total\MarketplaceShippingTax" sort_order="460"/>
         </group>
     </section>
     <section name="order_invoice">

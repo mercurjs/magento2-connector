@@ -3,6 +3,9 @@
     <event name="mercur_offers_imported">
         <observer name="mercur_offer_indexer_reindex" instance="Mercur\OfferIndexer\Observer\ReindexAfterImport"/>
     </event>
+    <event name="mercur_seller_imported">
+        <observer name="mercur_offer_indexer_seller_import" instance="Mercur\OfferIndexer\Observer\ReindexAfterSellerImport"/>
+    </event>
     <event name="catalog_product_save_after">
         <observer name="mercur_offer_indexer_product_save" instance="Mercur\OfferIndexer\Observer\ReindexAfterProductSave"/>
     </event>

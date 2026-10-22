@@ -38,13 +38,30 @@ class ProductIndex
 
     public function get(string $sku, int $websiteId): ?array
     {
+        return $this->getMany([$sku], $websiteId)[$sku] ?? null;
+    }
+
+    /**
+     * @param string[] $skus
+     * @return array<string, array<string, mixed>> rows keyed by sku
+     */
+    public function getMany(array $skus, int $websiteId): array
+    {
+        $skus = array_values(array_unique(array_filter($skus, 'strlen')));
+        if ($skus === []) {
+            return [];
+        }
         $connection = $this->resource->getConnection();
         $select = $connection->select()->from($this->table())
-            ->where('product_sku = ?', $sku)
+            ->where('product_sku IN (?)', $skus)
             ->where('website_id = ?', $websiteId);
-        $row = $connection->fetchRow($select);
 
-        return $row ?: null;
+        $result = [];
+        foreach ($connection->fetchAll($select) as $row) {
+            $result[(string) $row['product_sku']] = $row;
+        }
+
+        return $result;
     }
 
     private function table(): string

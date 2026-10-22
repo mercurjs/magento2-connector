@@ -17,6 +17,10 @@ final class StatusResolver
     public const RETURN_REQUESTED = 'return_requested';
     public const RETURNED = 'returned';
     public const CANCELED = 'canceled';
+    public const REFUSED = 'refused';
+
+    public const CANCEL_REASON_SELLER = 'seller_refused';
+    public const CANCEL_REASON_OTHER = 'canceled';
 
     public function resolve(array $line): string
     {
@@ -34,6 +38,21 @@ final class StatusResolver
             $this->qty($line, 'fulfilled_quantity') > 0 => self::FULFILLED,
             default => self::NOT_FULFILLED,
         };
+    }
+
+    /**
+     * A seller order canceled by its own seller was refused; anyone else canceling it is a plain cancellation.
+     */
+    public static function cancelStatus(?string $canceledBy, ?string $sellerId): string
+    {
+        $canceledBy = (string) $canceledBy;
+
+        return $canceledBy !== '' && $canceledBy === (string) $sellerId ? self::REFUSED : self::CANCELED;
+    }
+
+    public static function isCanceled(string $status): bool
+    {
+        return $status === self::CANCELED || $status === self::REFUSED;
     }
 
     /**

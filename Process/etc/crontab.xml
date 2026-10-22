@@ -4,5 +4,8 @@
         <job name="mercur_process_run_pending" instance="Mercur\Process\Cron\RunPending" method="execute">
             <schedule>* * * * *</schedule>
         </job>
+        <job name="mercur_process_clear_history" instance="Mercur\Process\Cron\ClearHistory" method="execute">
+            <schedule>0 3 * * *</schedule>
+        </job>
     </group>
 </config>

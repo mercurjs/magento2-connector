@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mercur\Settlement\Observer;
 
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -28,6 +29,7 @@ class ReportCreditMemo implements ObserverInterface
         private readonly RefundAllocator $allocator,
         private readonly Attribute $attributes,
         private readonly Json $json,
+        private readonly ManagerInterface $events,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -64,12 +66,19 @@ class ReportCreditMemo implements ObserverInterface
         $failed = false;
         foreach ($amounts as $sellerOrder => $amount) {
             try {
-                $this->api->recordExternalRefund(
+                $response = $this->api->recordExternalRefund(
                     $sellerOrder,
                     $amount,
                     (string) $creditmemo->getIncrementId(),
                     (string) ($creditmemo->getCustomerNote() ?: '')
                 );
+                $this->events->dispatch('mercur_refund_reported', [
+                    'order' => $creditmemo->getOrder(),
+                    'creditmemo' => $creditmemo,
+                    'seller_order_id' => $sellerOrder,
+                    'refund_id' => (string) ($response['refund']['id'] ?? ''),
+                    'amount' => $amount,
+                ]);
             } catch (\Throwable $e) {
                 $failed = true;
                 $this->logger->error('Mercur refund report failed', ['creditmemo' => $creditmemo->getIncrementId(), 'exception' => $e]);

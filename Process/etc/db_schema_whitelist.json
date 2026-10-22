@@ -2,19 +2,31 @@
     "mercur_process": {
         "column": {
             "id": true,
+            "parent_id": true,
             "code": true,
             "name": true,
             "status": true,
+            "hash": true,
             "params": true,
             "output": true,
+            "attempts": true,
+            "max_attempts": true,
+            "timeout_sec": true,
             "duration": true,
+            "locked_by": true,
+            "locked_at": true,
+            "last_output_at": true,
+            "next_run_at": true,
             "created_at": true,
             "started_at": true,
             "finished_at": true
         },
         "index": {
             "MERCUR_PROCESS_STATUS_CREATED_AT": true,
-            "MERCUR_PROCESS_CODE": true
+            "MERCUR_PROCESS_CODE": true,
+            "MERCUR_PROCESS_HASH_STATUS": true,
+            "MERCUR_PROCESS_PARENT_ID": true,
+            "MERCUR_PROCESS_STATUS_NEXT_RUN_AT": true
         },
         "constraint": {
             "PRIMARY": true
