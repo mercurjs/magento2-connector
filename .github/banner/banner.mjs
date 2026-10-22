@@ -1,5 +1,5 @@
 // node .github/banner/banner.mjs > banner.svg && rsvg-convert -w 2640 -o .github/banner.png banner.svg
-// Needs Inter installed for the renderer; the committed artefact is the PNG.
+// Needs Alpha Lyrae installed for the renderer (github.com/vegaprotocol/alpha-lyrae); the committed artefact is the PNG.
 // Hairline still frame: one stroke weight, isometric guide lines, two tiles,
 // one title set in Inter like the docs. Palette from mercurjs.com.
 
@@ -8,16 +8,16 @@ const H = 330
 
 const C = {
   bg: "#090909",
-  guide: "#1b1b1b",
-  line: "#3a3a3a",
-  edge: "#262626",
-  plate: "#0e0e0e",
+  guide: "#363636",
+  line: "#8a8a8a",
+  edge: "#4e4e4e",
+  plate: "#101010",
   hi: "#ffffff",
   mid: "#9ca3af",
-  lo: "#5a5a5a",
+  lo: "#7a7a7a",
 }
 
-const FONT = "Inter"
+const FONT = "Alpha Lyrae"
 const out = []
 const push = (s) => out.push(s)
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -96,10 +96,11 @@ tile(1120, 206, 150, 10, bagMark)
 line(792, 170, 806, 170, C.lo)
 line(799, 163, 799, 177, C.lo)
 
-// Title, Inter, weight 600, tight tracking like the docs h1.
-push(`<text x="80" y="108" font-size="20" fill="${C.mid}" font-weight="400" letter-spacing="-0.2">${esc("mercurjs.com")}</text>`)
-push(`<text x="80" y="188" font-family="Inter SemiBold" font-size="68" fill="${C.hi}" font-weight="600" letter-spacing="-2">${esc("Mercur")}</text>`)
-push(`<text x="80" y="266" font-family="Inter SemiBold" font-size="68" fill="${C.hi}" font-weight="600" letter-spacing="-2">${esc("Magento 2 Connector")}</text>`)
+// Title in Alpha Lyrae, Nitro's placement: title, tagline, url.
+push(`<text x="80" y="150" font-size="64" fill="${C.hi}" font-weight="500" letter-spacing="-1">${esc("Mercur")}</text>`)
+push(`<text x="80" y="218" font-size="64" fill="${C.hi}" font-weight="500" letter-spacing="-1">${esc("Magento 2 Connector")}</text>`)
+push(`<text x="80" y="262" font-size="18" fill="${C.hi}" font-weight="500">${esc("Marketplace offers, inside your Magento store.")}</text>`)
+push(`<text x="80" y="290" font-size="17" fill="${C.mid}" font-weight="500">${esc("mercurjs.com")}</text>`)
 
 push(`</svg>`)
 process.stdout.write(out.join("\n") + "\n")
