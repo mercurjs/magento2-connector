@@ -21,5 +21,7 @@ jobs:
         run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null
       - name: Install dev dependencies
         run: composer install --no-interaction --prefer-dist --ignore-platform-reqs --no-plugins
+      - name: Static analysis
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
       - name: Unit tests
         run: vendor/bin/phpunit

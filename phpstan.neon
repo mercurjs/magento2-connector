@@ -1,0 +1,20 @@
+includes:
+    - vendor/bitexpert/phpstan-magento/extension.neon
+
+parameters:
+    level: 1
+    paths:
+        - Core
+        - Process
+        - Connector
+        - OfferIndexer
+        - Catalog
+        - Settlement
+        - Frontend
+        - GraphQl
+        - Inventory
+    excludePaths:
+        - */view/*
+    ignoreErrors:
+        # Magento's own loggers extend Monolog\Logger the same way.
+        - '#extends @final class Monolog\\Logger#'
