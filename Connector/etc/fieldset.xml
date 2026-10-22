@@ -8,6 +8,7 @@
         </fieldset>
         <fieldset id="sales_convert_quote">
             <field name="mercur_cart_id"><aspect name="to_order"/></field>
+            <field name="mercur_shipping_methods"><aspect name="to_order"/></field>
         </fieldset>
         <fieldset id="sales_convert_quote_address">
             <field name="mercur_shipping_amount"><aspect name="to_order"/></field>

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="order_totals">
+            <block class="Mercur\Connector\Block\Sales\MarketplaceShippingTotal" name="mercur.shipping.total.order"/>
+        </referenceBlock>
+        <referenceContainer name="order_additional_info">
+            <block class="Mercur\Connector\Block\Adminhtml\Order\Marketplace" name="mercur.order.marketplace" template="Mercur_Connector::order/marketplace.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="order_items">
+            <arguments>
+                <argument name="columns" xsi:type="array">
+                    <item name="mercur-status" xsi:type="string" translate="true">Marketplace</item>
+                </argument>
+            </arguments>
+            <block class="Magento\Sales\Block\Adminhtml\Items\Column\DefaultColumn" name="column_mercur-status" template="Mercur_Connector::order/item-status.phtml" group="column"/>
+        </referenceBlock>
+        <referenceBlock name="default_order_items_renderer">
+            <arguments>
+                <argument name="columns" xsi:type="array">
+                    <item name="mercur-status" xsi:type="string" translate="false">col-mercur-status</item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

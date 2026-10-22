@@ -50,6 +50,31 @@
                     <label>Label for your own stock</label>
                 </field>
             </group>
+            <group id="delivery" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1">
+                <label>Delivery estimates</label>
+                <comment>Shown on seller offers, in the cart and at checkout. Lead time comes from the offer or the seller default.</comment>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
+                    <label>Show estimated delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="cutoff_time" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
+                    <label>Order cut-off time</label>
+                    <comment>HH:MM in the store timezone. Orders after it count from the next business day.</comment>
+                </field>
+                <field id="business_days" translate="label" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>Business days</label>
+                    <source_model>Mercur\Core\Model\Config\Source\Weekday</source_model>
+                </field>
+                <field id="transit_days_min" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                    <label>Minimum transit days</label>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="transit_days_max" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1">
+                    <label>Maximum transit days</label>
+                    <comment>A Mercur shipping option can override both through data.transit_days_min and data.transit_days_max.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+            </group>
             <group id="webhook" translate="label" type="text" sortOrder="30" showInDefault="1">
                 <label>Webhooks</label>
                 <field id="secret" translate="label comment" type="obscure" sortOrder="10" showInDefault="1">
@@ -71,6 +96,12 @@
                 </field>
                 <field id="full_cron" translate="label" type="text" sortOrder="40" showInDefault="1">
                     <label>Full resync schedule (cron)</label>
+                </field>
+                <field id="refunds_cron" translate="label" type="text" sortOrder="45" showInDefault="1">
+                    <label>Refund fallback schedule (cron)</label>
+                </field>
+                <field id="order_retry_cron" translate="label" type="text" sortOrder="46" showInDefault="1">
+                    <label>Order retry schedule (cron)</label>
                 </field>
                 <field id="page_size" translate="label" type="text" sortOrder="50" showInDefault="1">
                     <label>Page size</label>

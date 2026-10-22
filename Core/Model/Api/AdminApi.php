@@ -41,7 +41,7 @@ class AdminApi
             'limit' => $limit ?? $this->config->getPageSize(),
             'offset' => $offset,
             'fields' => 'id,name,handle,status,is_premium,closed_from,closed_to,default_leadtime_to_ship,'
-                . 'description,logo,updated_at,deleted_at',
+                . 'description,logo,banner,created_at,updated_at,deleted_at,address.city,address.country_code',
         ], $this->client->adminHeaders());
     }
 

@@ -79,6 +79,10 @@ class Offer extends AbstractModel
         return is_array($decoded) ? $decoded : [];
     }
 
+    /**
+     * The unit price for a quantity: the cheaper of the current price and the
+     * quantity tier that covers it.
+     */
     public function getPriceForQuantity(int $qty): float
     {
         $best = $this->getPrice();
@@ -86,10 +90,30 @@ class Offer extends AbstractModel
             $min = $range['min_quantity'] ?? 1;
             $max = $range['max_quantity'] ?? null;
             if ($qty >= (int) $min && ($max === null || $qty <= (int) $max)) {
-                $best = (float) $range['amount'];
+                $best = min($best, (float) $range['amount']);
             }
         }
 
         return $best;
+    }
+
+    public function getSellerName(): string
+    {
+        return (string) $this->getData('seller_name');
+    }
+
+    public function getSellerHandle(): string
+    {
+        return (string) $this->getData('seller_handle');
+    }
+
+    /**
+     * Days the seller needs before handing the parcel over, falling back to the seller default.
+     */
+    public function getLeadtimeToShip(): ?int
+    {
+        $value = $this->getData('leadtime_to_ship') ?? $this->getData('seller_default_leadtime_to_ship');
+
+        return $value === null ? null : (int) $value;
     }
 }

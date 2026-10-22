@@ -33,6 +33,16 @@ class Enqueue
         $this->enqueue('products');
     }
 
+    public function refunds(): void
+    {
+        $this->enqueue('refunds');
+    }
+
+    public function orderRetry(): void
+    {
+        $this->enqueue('order_retry');
+    }
+
     public function full(): void
     {
         $this->enqueue(FullSync::CODE);

@@ -1,0 +1,13 @@
+<?php
+/** @var \Magento\Sales\Block\Adminhtml\Items\Column\DefaultColumn $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$item = $block->getItem();
+$orderItem = $item->getOrderItem() ?: $item;
+$status = (string) $orderItem->getData('mercur_status');
+?>
+<?php if ($orderItem->getData('mercur_offer_id')): ?>
+    <?= $escaper->escapeHtml(\Mercur\Connector\Model\Order\MarketplaceOrderView::statusLabel($status)) ?>
+<?php else: ?>
+    <?= $escaper->escapeHtml(__('Own stock')) ?>
+<?php endif; ?>

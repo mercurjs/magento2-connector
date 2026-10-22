@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mercur\Connector\Model\Order;
 
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item;
-use Mercur\Connector\Model\Checkout\ShadowCart;
 use Mercur\Core\Model\Api\AdminApi;
 use Mercur\Core\Model\Api\StoreApi;
 use Mercur\Core\Model\Config;
@@ -25,6 +25,7 @@ class Synchronizer
         private readonly AdminApi $admin,
         private readonly Config $config,
         private readonly OrderRepositoryInterface $orders,
+        private readonly Json $json,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -39,7 +40,6 @@ class Synchronizer
 
         $storeId = (int) $order->getStoreId();
         $cart = $this->store->getCart($cartId, $storeId);
-
         $collection = $this->store->createPaymentCollection($cartId, $storeId);
         $this->store->createExternalPaymentSession((string) $collection['id'], [
             'reference' => (string) $order->getIncrementId(),
@@ -56,12 +56,12 @@ class Synchronizer
                 'order' => $order->getIncrementId(),
                 'response' => $completed,
             ]);
-
             return;
         }
 
         $group = $completed['order_group'];
         $order->setData('mercur_order_group_id', $group['id']);
+        $order->setData('mercur_shipping_methods', $this->json->serialize($this->shippingBySeller($order, $cart)));
         $order->addCommentToStatusHistory(__('Marketplace order group %1 created in Mercur.', $group['display_id'] ?? $group['id']));
 
         $bySeller = [];
@@ -71,6 +71,7 @@ class Synchronizer
                 $bySeller[(string) $sellerId] = (string) $child['id'];
             }
         }
+
         foreach ($items as $item) {
             $sellerId = (string) $item->getData('mercur_seller_id');
             if (isset($bySeller[$sellerId])) {
@@ -79,7 +80,38 @@ class Synchronizer
             }
         }
 
+        foreach (array_unique($bySeller) as $sellerOrderId) {
+            $this->linkLineItems($sellerOrderId, $items);
+        }
+
         $this->orders->save($order);
+    }
+
+    /**
+     * Seller order lines are new records in Mercur; fulfillments point at
+     * them, so each Magento line remembers its counterpart. Lines are matched
+     * on SKU, which is unique within one seller's order.
+     *
+     * @param Item[] $items
+     */
+    public function linkLineItems(string $sellerOrderId, array $items): void
+    {
+        try {
+            $remote = $this->admin->getOrder($sellerOrderId, 'id,items.id,items.variant_sku');
+        } catch (\Throwable $e) {
+            $this->logger->warning('Could not read Mercur seller order lines', ['order' => $sellerOrderId, 'exception' => $e]);
+            return;
+        }
+
+        $bySku = [];
+        foreach ($remote['items'] ?? [] as $line) {
+            $bySku[(string) ($line['variant_sku'] ?? '')] = (string) $line['id'];
+        }
+        foreach ($items as $item) {
+            if ($item->getData('mercur_order_id') === $sellerOrderId && isset($bySku[(string) $item->getSku()])) {
+                $item->setData('mercur_order_line_item_id', $bySku[(string) $item->getSku()]);
+            }
+        }
     }
 
     /**
@@ -94,7 +126,7 @@ class Synchronizer
     }
 
     /**
-     * @return array<string, Item[]> items grouped by Mercur seller order id
+     * @return array<string, Item[]> Magento lines grouped by Mercur seller order id
      */
     public function itemsBySellerOrder(Order $order): array
     {
@@ -107,5 +139,35 @@ class Synchronizer
         }
 
         return $groups;
+    }
+
+    /**
+     * @return array<string, array{option_id: string, name: string, amount: float}>
+     */
+    private function shippingBySeller(Order $order, array $cart): array
+    {
+        $chosen = $order->getData('mercur_shipping_methods');
+        $chosen = $chosen ? $this->json->unserialize((string) $chosen) : [];
+        if (!is_array($chosen)) {
+            return [];
+        }
+
+        $methods = [];
+        foreach ($cart['shipping_methods'] ?? [] as $method) {
+            $methods[(string) ($method['shipping_option_id'] ?? '')] = $method;
+        }
+
+        $result = [];
+        foreach ($chosen as $sellerId => $optionId) {
+            $optionId = is_array($optionId) ? (string) ($optionId['option_id'] ?? '') : (string) $optionId;
+            $method = $methods[$optionId] ?? [];
+            $result[(string) $sellerId] = [
+                'option_id' => $optionId,
+                'name' => (string) ($method['name'] ?? ''),
+                'amount' => (float) ($method['amount'] ?? 0),
+            ];
+        }
+
+        return $result;
     }
 }

@@ -1,7 +1,22 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="checkout_cart_product_add_after">
-        <observer name="mercur_add_offer_to_cart_item" instance="Mercur\Connector\Observer\AddOfferToCartItem"/>
+    <event name="catalog_product_type_prepare_full_options">
+        <observer name="mercur_add_offer_option" instance="Mercur\Connector\Observer\AddOfferOption"/>
+    </event>
+    <event name="sales_quote_product_add_after">
+        <observer name="mercur_attach_offer_to_quote_item" instance="Mercur\Connector\Observer\AttachOfferToQuoteItem"/>
+    </event>
+    <event name="sales_quote_collect_totals_before">
+        <observer name="mercur_validate_marketplace_items" instance="Mercur\Connector\Observer\ValidateMarketplaceItems"/>
+    </event>
+    <event name="catalog_product_is_salable_after">
+        <observer name="mercur_mark_salable_from_offers" instance="Mercur\Connector\Observer\MarkSalableFromOffers"/>
+    </event>
+    <event name="sales_order_invoice_register">
+        <observer name="mercur_track_shipping_invoiced" instance="Mercur\Connector\Observer\TrackMarketplaceShippingInvoiced"/>
+    </event>
+    <event name="sales_order_creditmemo_refund">
+        <observer name="mercur_track_shipping_refunded" instance="Mercur\Connector\Observer\TrackMarketplaceShippingInvoiced"/>
     </event>
     <event name="sales_order_place_after">
         <observer name="mercur_place_marketplace_order" instance="Mercur\Connector\Observer\PlaceMarketplaceOrder"/>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Mercur_Connector::sellers" title="Sellers" module="Mercur_Connector" sortOrder="5" parent="Mercur_Core::mercur" action="mercur/seller/index" resource="Mercur_Core::sellers"/>
+        <add id="Mercur_Connector::offers" title="Offers" module="Mercur_Connector" sortOrder="6" parent="Mercur_Core::mercur" action="mercur/offer/index" resource="Mercur_Core::offers"/>
+    </menu>
+</config>

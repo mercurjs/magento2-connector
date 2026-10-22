@@ -59,11 +59,29 @@
                 <item name="seller.unterminated" xsi:type="array">
                     <item name="sync" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\EnqueueSellerSync</item>
                 </item>
-                <item name="order.shipment_created" xsi:type="array">
-                    <item name="shipment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\OrderShipment</item>
-                </item>
                 <item name="order.canceled" xsi:type="array">
                     <item name="canceled" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\OrderCanceled</item>
+                </item>
+                <item name="order.fulfillment_created" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="order.fulfillment_canceled" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="order.shipment_created" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="shipment.created" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="delivery.created" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="order.return_requested" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
+                </item>
+                <item name="order.return_received" xsi:type="array">
+                    <item name="fulfillment" xsi:type="object">Mercur\Connector\Model\Webhook\Handler\SyncFulfillment</item>
                 </item>
             </argument>
         </arguments>
@@ -78,6 +96,11 @@
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
     </type>
+    <type name="Mercur\Connector\Model\Fulfillment\FulfillmentSync">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
     <type name="Mercur\Connector\Model\Order\Synchronizer">
         <arguments>
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
@@ -88,10 +111,46 @@
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
     </type>
+    <type name="Magento\Quote\Model\Quote\Item\CartItemOptionsProcessor">
+        <plugin name="mercur_add_offer_to_rest_buy_request" type="Mercur\Connector\Plugin\AddOfferToRestBuyRequest"/>
+    </type>
+    <type name="Magento\Shipping\Model\Shipping">
+        <plugin name="mercur_exclude_marketplace_items_from_rates" type="Mercur\Connector\Plugin\ExcludeMarketplaceItemsFromRates"/>
+    </type>
+    <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
+        <plugin name="mercur_copy_seller_label" type="Mercur\Connector\Plugin\CopySellerLabelToOrderItem"/>
+    </type>
     <type name="Magento\CatalogInventory\Model\Quote\Item\QuantityValidator">
         <plugin name="mercur_skip_stock_validation_for_offers" type="Mercur\Connector\Plugin\SkipStockValidationForOffers"/>
     </type>
     <type name="Magento\CatalogInventory\Observer\SubtractQuoteInventoryObserver">
         <plugin name="mercur_skip_stock_deduction_for_offers" type="Mercur\Connector\Plugin\SkipStockDeductionForOffers"/>
     </type>
+    <virtualType name="Mercur\Connector\Model\ResourceModel\Seller\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mercur_seller</argument>
+            <argument name="resourceModel" xsi:type="string">Mercur\Connector\Model\ResourceModel\Seller</argument>
+        </arguments>
+    </virtualType>
+    <type name="Mercur\Connector\Model\ResourceModel\Offer\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mercur_offer</argument>
+            <argument name="resourceModel" xsi:type="string">Mercur\Connector\Model\ResourceModel\Offer</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mercur_seller_listing_data_source" xsi:type="string">Mercur\Connector\Model\ResourceModel\Seller\Grid\Collection</item>
+                <item name="mercur_offer_listing_data_source" xsi:type="string">Mercur\Connector\Model\ResourceModel\Offer\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="mercur_order_group_id" xsi:type="string">sales_order.mercur_order_group_id</item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>

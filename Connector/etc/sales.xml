@@ -8,4 +8,14 @@
             </item>
         </group>
     </section>
+    <section name="order_invoice">
+        <group name="totals">
+            <item name="mercur_shipping" instance="Mercur\Connector\Model\Total\Invoice\MarketplaceShipping" sort_order="160"/>
+        </group>
+    </section>
+    <section name="order_creditmemo">
+        <group name="totals">
+            <item name="mercur_shipping" instance="Mercur\Connector\Model\Total\Creditmemo\MarketplaceShipping" sort_order="210"/>
+        </group>
+    </section>
 </config>

@@ -13,14 +13,13 @@ class OfferMapper
     {
     }
 
-    public function map(array $offer, string $currencyCode): ?array
+    public function map(array $offer): ?array
     {
         $sku = $offer['product_variant']['sku'] ?? null;
         if (!$sku) {
             return null;
         }
 
-        [$price, $ranges] = $this->prices($offer['prices'] ?? [], $currencyCode);
         $seller = $offer['seller'] ?? [];
 
         return [
@@ -31,10 +30,6 @@ class OfferMapper
             'mercur_product_id' => $offer['product_id'] ?? ($offer['product_variant']['product_id'] ?? null),
             'variant_id' => $offer['variant_id'],
             'shipping_profile_id' => $offer['shipping_profile_id'] ?? null,
-            'price' => $price,
-            'origin_price' => null,
-            'currency_code' => $currencyCode,
-            'price_ranges' => $ranges === [] ? null : json_encode($ranges),
             'quantity' => $this->quantity($offer['inventory_items'] ?? []),
             'allow_backorder' => (int) ($offer['allow_backorder'] ?? false),
             'manage_inventory' => (int) ($offer['manage_inventory'] ?? true),
@@ -43,29 +38,6 @@ class OfferMapper
             'active' => (int) $this->sellers->isSelling($seller),
             'updated_at' => $this->timestamp($offer['updated_at'] ?? null),
         ];
-    }
-
-    /**
-     * @return array{0: float|null, 1: array}
-     */
-    private function prices(array $prices, string $currencyCode): array
-    {
-        $base = null;
-        $ranges = [];
-        foreach ($prices as $price) {
-            if (strtolower((string) ($price['currency_code'] ?? '')) !== strtolower($currencyCode)) {
-                continue;
-            }
-            $min = $price['min_quantity'] ?? null;
-            $max = $price['max_quantity'] ?? null;
-            if ($min === null && $max === null) {
-                $base = (float) $price['amount'];
-                continue;
-            }
-            $ranges[] = ['min_quantity' => $min, 'max_quantity' => $max, 'amount' => (float) $price['amount']];
-        }
-
-        return [$base, $ranges];
     }
 
     private function quantity(array $inventoryItems): ?int
@@ -84,7 +56,7 @@ class OfferMapper
             $available = $available === null ? $units : min($available, $units);
         }
 
-        return $available ?? 0;
+        return $available;
     }
 
 

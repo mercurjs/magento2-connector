@@ -11,6 +11,10 @@
             "closed_to": true,
             "description": true,
             "logo": true,
+            "banner": true,
+            "city": true,
+            "country_code": true,
+            "selling_since": true,
             "updated_at": true
         },
         "index": {
@@ -29,21 +33,37 @@
             "mercur_product_id": true,
             "variant_id": true,
             "shipping_profile_id": true,
-            "price": true,
-            "origin_price": true,
-            "currency_code": true,
-            "price_ranges": true,
             "quantity": true,
             "allow_backorder": true,
             "manage_inventory": true,
             "leadtime_to_ship": true,
             "condition_code": true,
             "active": true,
-            "updated_at": true
+            "updated_at": true,
+            "price": true,
+            "origin_price": true,
+            "currency_code": true,
+            "price_ranges": true
         },
         "index": {
             "MERCUR_OFFER_PRODUCT_SKU": true,
             "MERCUR_OFFER_SELLER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mercur_offer_price": {
+        "column": {
+            "offer_id": true,
+            "website_id": true,
+            "currency_code": true,
+            "price": true,
+            "origin_price": true,
+            "price_ranges": true
+        },
+        "index": {
+            "MERCUR_OFFER_PRICE_WEBSITE_ID": true
         },
         "constraint": {
             "PRIMARY": true
@@ -73,7 +93,12 @@
             "mercur_cart_id": true,
             "mercur_order_group_id": true,
             "mercur_shipping_amount": true,
-            "base_mercur_shipping_amount": true
+            "base_mercur_shipping_amount": true,
+            "mercur_shipping_invoiced": true,
+            "base_mercur_shipping_invoiced": true,
+            "mercur_shipping_refunded": true,
+            "base_mercur_shipping_refunded": true,
+            "mercur_shipping_methods": true
         }
     },
     "sales_order_item": {
@@ -82,7 +107,41 @@
             "mercur_seller_id": true,
             "mercur_line_item_id": true,
             "mercur_order_id": true,
-            "mercur_status": true
+            "mercur_status": true,
+            "mercur_order_line_item_id": true
+        },
+        "index": {
+            "SALES_ORDER_ITEM_MERCUR_ORDER_ID": true
+        }
+    },
+    "sales_order_grid": {
+        "column": {
+            "mercur_order_group_id": true
+        }
+    },
+    "sales_invoice": {
+        "column": {
+            "mercur_shipping_amount": true,
+            "base_mercur_shipping_amount": true
+        }
+    },
+    "sales_creditmemo": {
+        "column": {
+            "mercur_shipping_amount": true,
+            "base_mercur_shipping_amount": true,
+            "mercur_refund_id": true,
+            "mercur_reported": true
+        },
+        "index": {
+            "SALES_CREDITMEMO_MERCUR_REFUND_ID": true
+        }
+    },
+    "sales_shipment": {
+        "column": {
+            "mercur_fulfillment_id": true
+        },
+        "index": {
+            "SALES_SHIPMENT_MERCUR_FULFILLMENT_ID": true
         }
     }
 }

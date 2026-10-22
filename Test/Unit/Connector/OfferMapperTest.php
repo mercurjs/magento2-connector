@@ -43,14 +43,12 @@ final class OfferMapperTest extends TestCase
         return array_replace($base, $overrides);
     }
 
-    public function testMapsPricesStockAndSellerLeadTime(): void
+    public function testMapsStockAndSellerLeadTime(): void
     {
-        $row = (new OfferMapper(new SellerMapper()))->map($this->offer(), 'USD');
+        $row = (new OfferMapper(new SellerMapper()))->map($this->offer());
 
         self::assertSame('MAG-SKU', $row['product_sku']);
-        self::assertSame(25.0, $row['price']);
-        self::assertSame('USD', $row['currency_code']);
-        self::assertEquals([['min_quantity' => 10, 'max_quantity' => null, 'amount' => 20]], json_decode($row['price_ranges'], true));
+        self::assertArrayNotHasKey('price', $row);
         self::assertSame(13, $row['quantity']);
         self::assertSame(3, $row['leadtime_to_ship']);
         self::assertSame(1, $row['active']);
@@ -64,7 +62,7 @@ final class OfferMapperTest extends TestCase
                 ['required_quantity' => 2, 'inventory_item' => ['location_levels' => [['stocked_quantity' => 9, 'reserved_quantity' => 0]]]],
                 ['required_quantity' => 1, 'inventory_item' => ['location_levels' => [['stocked_quantity' => 100, 'reserved_quantity' => 0]]]],
             ],
-        ]), 'USD');
+        ]));
 
         self::assertSame(4, $row['quantity']);
     }
@@ -73,16 +71,16 @@ final class OfferMapperTest extends TestCase
     {
         $mapper = new OfferMapper(new SellerMapper());
 
-        self::assertSame(0, $mapper->map($this->offer(['seller' => ['status' => 'suspended']]), 'USD')['active']);
+        self::assertSame(0, $mapper->map($this->offer(['seller' => ['status' => 'suspended']]))['active']);
         self::assertSame(0, $mapper->map($this->offer(['seller' => [
             'status' => 'open',
             'closed_from' => '2000-01-01T00:00:00Z',
             'closed_to' => '2999-01-01T00:00:00Z',
-        ]]), 'USD')['active']);
+        ]]))['active']);
     }
 
     public function testOfferWithoutVariantSkuIsSkipped(): void
     {
-        self::assertNull((new OfferMapper(new SellerMapper()))->map($this->offer(['product_variant' => ['sku' => null]]), 'USD'));
+        self::assertNull((new OfferMapper(new SellerMapper()))->map($this->offer(['product_variant' => ['sku' => null]])));
     }
 }

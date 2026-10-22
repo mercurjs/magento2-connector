@@ -88,6 +88,19 @@ class StoreApi
         return $this->client->post('/store/carts/' . $cartId . '/complete', [], $this->client->storeHeaders($storeId), $storeId);
     }
 
+    /**
+     * @param string[] $offerIds
+     */
+    public function listPricedOffers(array $offerIds, string $regionId, ?int $storeId = null): array
+    {
+        return $this->client->get('/store/offers', [
+            'id' => array_values($offerIds),
+            'region_id' => $regionId,
+            'limit' => count($offerIds),
+            'fields' => '+calculated_price',
+        ], $this->client->storeHeaders($storeId), $storeId)['offers'] ?? [];
+    }
+
     public function listOffersForProduct(string $productId, string $regionId, ?int $storeId = null): array
     {
         return $this->client->get('/store/offers', [

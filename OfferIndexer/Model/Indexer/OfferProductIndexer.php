@@ -8,6 +8,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\StoreManagerInterface;
+use Mercur\Connector\Model\Inventory\ProductSalability;
 use Mercur\Connector\Model\ResourceModel\Offer\CollectionFactory as OfferCollectionFactory;
 use Mercur\Core\Model\Config;
 use Mercur\OfferIndexer\Model\BestOfferSelector;
@@ -48,11 +49,11 @@ class OfferProductIndexer
         }
 
         foreach (array_chunk($skus, 500) as $chunk) {
-            $offersBySku = $this->loadOffers($chunk);
             $operator = $this->loadOperatorCandidates($chunk);
 
             foreach ($this->storeManager->getWebsites() as $website) {
                 $websiteId = (int) $website->getId();
+                $offersBySku = $this->loadOffers($chunk, $websiteId);
                 $rule = $this->config->getBestOfferRule($websiteId);
                 $rows = [];
                 $empty = [];
@@ -92,10 +93,10 @@ class OfferProductIndexer
     /**
      * @return array<string, Candidate[]>
      */
-    private function loadOffers(array $skus): array
+    private function loadOffers(array $skus, int $websiteId): array
     {
         $collection = $this->offers->create();
-        $collection->addSkuFilter($skus)->addActiveFilter()->joinSeller();
+        $collection->addSkuFilter($skus)->addActiveFilter()->addWebsitePrice($websiteId)->joinSeller();
 
         $result = [];
         foreach ($collection as $offer) {
@@ -124,6 +125,9 @@ class OfferProductIndexer
                 continue;
             }
             $salable = (bool) $product->isSalable();
+            if ($product->hasData(ProductSalability::OWN_SALABLE)) {
+                $salable = (bool) $product->getData(ProductSalability::OWN_SALABLE);
+            }
             $result[$product->getSku()] = Candidate::operator($price, $salable);
         }
 

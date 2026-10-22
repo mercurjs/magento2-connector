@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <mercur>
+                <active>1</active>
+                <model>Mercur\Connector\Model\Carrier\Marketplace</model>
+                <title>Marketplace</title>
+                <name>Shipped by the sellers</name>
+                <sort_order>0</sort_order>
+                <sallowspecific>0</sallowspecific>
+            </mercur>
+        </carriers>
+    </default>
+</config>

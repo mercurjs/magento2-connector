@@ -19,14 +19,31 @@ class Collection extends AbstractCollection
 
     public function addSkuFilter(string|array $sku): self
     {
-        $this->addFieldToFilter('product_sku', ['in' => (array) $sku]);
+        $this->addFieldToFilter('main_table.product_sku', ['in' => (array) $sku]);
 
         return $this;
     }
 
     public function addActiveFilter(): self
     {
-        $this->addFieldToFilter('active', 1);
+        $this->addFieldToFilter('main_table.active', 1);
+
+        return $this;
+    }
+
+    /**
+     * Joins the price of the given website; offers without one are not sold there.
+     */
+    public function addWebsitePrice(int $websiteId): self
+    {
+        $this->getSelect()->join(
+            ['offer_price' => $this->getTable('mercur_offer_price')],
+            $this->getConnection()->quoteInto(
+                'offer_price.offer_id = main_table.offer_id AND offer_price.website_id = ?',
+                $websiteId
+            ),
+            ['price', 'origin_price', 'currency_code', 'price_ranges', 'website_id']
+        );
 
         return $this;
     }
@@ -36,7 +53,13 @@ class Collection extends AbstractCollection
         $this->getSelect()->joinLeft(
             ['seller' => $this->getTable('mercur_seller')],
             'seller.seller_id = main_table.seller_id',
-            ['seller_name' => 'seller.name', 'seller_handle' => 'seller.handle', 'seller_premium' => 'seller.premium']
+            [
+                'seller_name' => 'seller.name',
+                'seller_handle' => 'seller.handle',
+                'seller_premium' => 'seller.premium',
+                'seller_logo' => 'seller.logo',
+                'seller_default_leadtime_to_ship' => 'seller.default_leadtime_to_ship',
+            ]
         );
 
         return $this;

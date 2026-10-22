@@ -22,6 +22,11 @@ class Config
     private const PATH_OPERATOR_LABEL = 'mercur/offers/operator_label';
     private const PATH_WEBHOOK_SECRET = 'mercur/webhook/secret';
     private const PATH_PAGE_SIZE = 'mercur/sync/page_size';
+    private const PATH_DELIVERY_ENABLED = 'mercur/delivery/enabled';
+    private const PATH_CUTOFF_TIME = 'mercur/delivery/cutoff_time';
+    private const PATH_BUSINESS_DAYS = 'mercur/delivery/business_days';
+    private const PATH_TRANSIT_MIN = 'mercur/delivery/transit_days_min';
+    private const PATH_TRANSIT_MAX = 'mercur/delivery/transit_days_max';
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -87,6 +92,36 @@ class Config
     public function getPageSize(): int
     {
         return max(1, (int) $this->scopeConfig->getValue(self::PATH_PAGE_SIZE) ?: 100);
+    }
+
+    public function isDeliveryEstimateEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::PATH_DELIVERY_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getCutoffTime(?int $storeId = null): string
+    {
+        return (string) $this->scopeConfig->getValue(self::PATH_CUTOFF_TIME, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @return int[] ISO weekday numbers, 1 = Monday
+     */
+    public function getBusinessDays(?int $storeId = null): array
+    {
+        $raw = (string) $this->scopeConfig->getValue(self::PATH_BUSINESS_DAYS, ScopeInterface::SCOPE_STORE, $storeId);
+
+        return array_values(array_filter(array_map('intval', explode(',', $raw))));
+    }
+
+    public function getTransitDaysMin(?int $storeId = null): int
+    {
+        return (int) $this->scopeConfig->getValue(self::PATH_TRANSIT_MIN, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getTransitDaysMax(?int $storeId = null): int
+    {
+        return (int) $this->scopeConfig->getValue(self::PATH_TRANSIT_MAX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     private function decrypt(string $path, ?int $storeId = null): string

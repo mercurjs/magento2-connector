@@ -27,9 +27,9 @@ class BuyBox
     /**
      * @return Offer[]
      */
-    public function offers(string $sku): array
+    public function offers(string $sku, int $websiteId): array
     {
-        return $this->offers->getActiveForSku($sku);
+        return $this->offers->getActiveForSku($sku, $websiteId);
     }
 
     public function bestOffer(string $sku, int $websiteId): ?Offer
@@ -37,6 +37,6 @@ class BuyBox
         $summary = $this->summary($sku, $websiteId);
         $offerId = $summary['best_offer_id'] ?? null;
 
-        return $offerId ? $this->offers->getById((string) $offerId) : null;
+        return $offerId ? $this->offers->getById((string) $offerId, $websiteId) : null;
     }
 }

@@ -58,7 +58,7 @@ class ShadowCart
             $cart = $this->api->createCart(
                 $this->config->getRegionId($storeId),
                 $this->config->getSalesChannelId($storeId),
-                (string) $quote->getQuoteCurrencyCode(),
+                (string) $quote->getBaseCurrencyCode(),
                 ['channel' => $this->config->getChannel($storeId), 'magento_quote_id' => (string) $quote->getId()],
                 $storeId
             );

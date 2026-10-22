@@ -19,11 +19,20 @@
             <webhook>
                 <secret backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
             </webhook>
+            <delivery>
+                <enabled>1</enabled>
+                <cutoff_time>14:00</cutoff_time>
+                <business_days>1,2,3,4,5</business_days>
+                <transit_days_min>1</transit_days_min>
+                <transit_days_max>3</transit_days_max>
+            </delivery>
             <sync>
                 <sellers_cron>*/15 * * * *</sellers_cron>
                 <offers_cron>*/5 * * * *</offers_cron>
                 <products_cron>0 * * * *</products_cron>
                 <full_cron>0 2 * * *</full_cron>
+                <refunds_cron>*/15 * * * *</refunds_cron>
+                <order_retry_cron>*/10 * * * *</order_retry_cron>
                 <page_size>100</page_size>
             </sync>
         </mercur>

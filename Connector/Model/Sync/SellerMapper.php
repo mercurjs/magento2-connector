@@ -19,6 +19,10 @@ class SellerMapper
             'closed_to' => $this->timestamp($seller['closed_to'] ?? null),
             'description' => $seller['description'] ?? null,
             'logo' => $seller['logo'] ?? null,
+            'banner' => $seller['banner'] ?? null,
+            'city' => $seller['address']['city'] ?? null,
+            'country_code' => isset($seller['address']['country_code']) ? strtoupper((string) $seller['address']['country_code']) : null,
+            'selling_since' => $this->timestamp($seller['created_at'] ?? null),
             'updated_at' => $this->timestamp($seller['updated_at'] ?? null),
         ];
     }

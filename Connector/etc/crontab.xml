@@ -10,6 +10,9 @@
         <job name="mercur_sync_products" instance="Mercur\Connector\Cron\Enqueue" method="products">
             <config_path>mercur/sync/products_cron</config_path>
         </job>
+        <job name="mercur_retry_orders" instance="Mercur\Connector\Cron\Enqueue" method="orderRetry">
+            <config_path>mercur/sync/order_retry_cron</config_path>
+        </job>
         <job name="mercur_sync_full" instance="Mercur\Connector\Cron\Enqueue" method="full">
             <config_path>mercur/sync/full_cron</config_path>
         </job>

@@ -2,7 +2,7 @@
   "name": "mercurjs/magento2-connector",
   "description": "Sell Mercur marketplace offers from a Magento 2 storefront, next to your own products.",
   "type": "magento2-component",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "homepage": "https://mercurjs.com",
   "support": {
@@ -26,18 +26,30 @@
   "require": {
     "php": ">=8.1",
     "magento/framework": "^103.0",
+    "magento/module-backend": "^102.0",
     "magento/module-catalog": "^104.0",
+    "magento/module-catalog-graph-ql": "^100.4",
+    "magento/module-catalog-inventory": "^100.4",
     "magento/module-checkout": "^100.4",
+    "magento/module-config": "^101.2",
+    "magento/module-configurable-product": "^100.4",
+    "magento/module-cron": "^100.4",
+    "magento/module-directory": "^100.4",
+    "magento/module-graph-ql": "^100.4",
     "magento/module-quote": "^101.2",
+    "magento/module-quote-graph-ql": "^100.4",
     "magento/module-sales": "^103.0",
+    "magento/module-sales-graph-ql": "^100.4",
     "magento/module-shipping": "^100.4",
     "magento/module-store": "^101.1",
-    "magento/module-backend": "^102.0",
-    "magento/module-config": "^101.2",
-    "magento/module-ui": "^101.2",
-    "magento/module-cron": "^100.4"
+    "magento/module-ui": "^101.2"
   },
   "require-dev": {
+    "bitexpert/phpstan-magento": "^0.32",
+    "magento/module-inventory-sales": "^1.2",
+    "magento/module-inventory-sales-api": "^1.2",
+    "magento/module-inventory-shipping": "^1.2",
+    "phpstan/phpstan": "^1.12",
     "phpunit/phpunit": "^10.5",
     "squizlabs/php_codesniffer": "^3.9"
   },
@@ -53,7 +65,8 @@
       "Mercur\\Catalog\\": "Catalog/",
       "Mercur\\Settlement\\": "Settlement/",
       "Mercur\\Frontend\\": "Frontend/",
-      "Mercur\\GraphQl\\": "GraphQl/"
+      "Mercur\\GraphQl\\": "GraphQl/",
+      "Mercur\\Inventory\\": "Inventory/"
     }
   },
   "autoload-dev": {
@@ -63,9 +76,13 @@
   },
   "scripts": {
     "lint": "find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null",
-    "test": "phpunit"
+    "test": "phpunit",
+    "analyse": "phpstan analyse --no-progress --memory-limit=2G"
   },
   "config": {
     "sort-packages": true
+  },
+  "suggest": {
+    "magento/module-inventory-sales": "Enable Mercur_Inventory on stores that run Multi-Source Inventory"
   }
 }
