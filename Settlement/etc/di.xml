@@ -5,4 +5,33 @@
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
     </type>
+    <type name="Mercur\Settlement\Model\RefundExecutor">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Settlement\Model\Webhook\RefundCanceledSellerOrder">
+        <arguments>
+            <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Process\Model\TaskPool">
+        <arguments>
+            <argument name="tasks" xsi:type="array">
+                <item name="refunds" xsi:type="object">Mercur\Settlement\Model\Task\RefundPoll</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Mercur\Connector\Model\Webhook\Dispatcher">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="order.refund_requested" xsi:type="array">
+                    <item name="refund" xsi:type="object">Mercur\Settlement\Model\Webhook\RefundRequested</item>
+                </item>
+                <item name="order.canceled" xsi:type="array">
+                    <item name="refund" xsi:type="object">Mercur\Settlement\Model\Webhook\RefundCanceledSellerOrder</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>
