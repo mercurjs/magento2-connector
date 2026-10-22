@@ -96,11 +96,12 @@ tile(1120, 206, 150, 10, bagMark)
 line(792, 170, 806, 170, C.lo)
 line(799, 163, 799, 177, C.lo)
 
-// Title in Alpha Lyrae, Nitro's placement: title, tagline, url.
-push(`<text x="80" y="150" font-size="64" fill="${C.hi}" font-weight="500" letter-spacing="-1">${esc("Mercur")}</text>`)
-push(`<text x="80" y="218" font-size="64" fill="${C.hi}" font-weight="500" letter-spacing="-1">${esc("Magento 2 Connector")}</text>`)
-push(`<text x="80" y="262" font-size="18" fill="${C.hi}" font-weight="500">${esc("Marketplace offers, inside your Magento store.")}</text>`)
-push(`<text x="80" y="290" font-size="17" fill="${C.mid}" font-weight="500">${esc("mercurjs.com")}</text>`)
+// Title in Alpha Lyrae the way raindrop.ai sets its display type:
+// weight 500, contextual alternates off, tight tracking, 1.1 line height.
+const T = `font-family="Alpha Lyrae" font-weight="500" fill="${C.hi}" style="font-feature-settings:'calt' 0"`
+push(`<text x="80" y="166" font-size="76" letter-spacing="-3.4" ${T}>${esc("Mercur")}</text>`)
+push(`<text x="80" y="250" font-size="76" letter-spacing="-3.4" ${T}>${esc("Magento 2 Connector")}</text>`)
+push(`<text x="80" y="296" font-size="17" letter-spacing="-0.3" font-family="Alpha Lyrae" font-weight="500" fill="${C.mid}" style="font-feature-settings:'calt' 0">${esc("mercurjs.com")}</text>`)
 
 push(`</svg>`)
 process.stdout.write(out.join("\n") + "\n")
