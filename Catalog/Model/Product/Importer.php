@@ -8,13 +8,17 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Type;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Core\Model\Scope\WebsiteScope;
 
 /**
- * Creates or refreshes a Magento product from a published Mercur product. One
- * simple product per variant; the Mercur product id is kept in metadata so
- * the next import finds it again.
+ * Creates or refreshes Magento products from a published Mercur product: one
+ * simple product per variant, grouped under a configurable parent when the
+ * variant axes map to Magento attributes. Imported products hold no stock of
+ * their own; they are in stock while a seller offers them.
  */
 class Importer
 {
@@ -22,7 +26,11 @@ class Importer
         private readonly ProductRepositoryInterface $products,
         private readonly ProductInterfaceFactory $productFactory,
         private readonly CatalogConfig $config,
-        private readonly AttributeWriter $attributes
+        private readonly AttributeWriter $attributes,
+        private readonly ConfigurableAxes $axes,
+        private readonly ConfigurableBuilder $configurable,
+        private readonly WebsiteScope $websiteScope,
+        private readonly StoreManagerInterface $storeManager
     ) {
     }
 
@@ -31,27 +39,38 @@ class Importer
      */
     public function import(array $mercurProduct): array
     {
+        $axisHandles = $this->axes->fromProduct($mercurProduct);
+        $axisCodes = $axisHandles === null ? [] : $this->configurable->usableAxes($axisHandles);
+        $asChildren = $axisCodes !== [];
+        $websiteIds = $this->websiteIds();
+
         $skus = [];
+        $children = [];
         foreach ($mercurProduct['variants'] ?? [] as $variant) {
             $sku = (string) ($variant['sku'] ?? '');
             if ($sku === '') {
                 continue;
             }
-
             $product = $this->find($sku);
             $isNew = $product === null;
             $product ??= $this->productFactory->create();
-
             if ($isNew) {
                 $product->setSku($sku)
                     ->setTypeId(Type::TYPE_SIMPLE)
                     ->setAttributeSetId($this->config->getAttributeSetId())
                     ->setStatus($this->config->getImportedProductStatus())
-                    ->setVisibility($this->config->getImportedProductVisibility())
                     ->setPrice(0)
-                    ->setWebsiteIds($this->allWebsiteIds())
-                    ->setStockData(['use_config_manage_stock' => 0, 'manage_stock' => 0, 'is_in_stock' => 1]);
+                    ->setStockData([
+                        'use_config_manage_stock' => 0,
+                        'manage_stock' => 1,
+                        'use_config_backorders' => 0,
+                        'backorders' => 1,
+                        'qty' => 0,
+                        'is_in_stock' => 0,
+                    ]);
             }
+            $product->setWebsiteIds($websiteIds);
+            $product->setVisibility($asChildren ? Visibility::VISIBILITY_NOT_VISIBLE : $this->config->getImportedProductVisibility());
 
             $title = (string) ($mercurProduct['title'] ?? $sku);
             $variantTitle = (string) ($variant['title'] ?? '');
@@ -63,13 +82,39 @@ class Importer
             if (!empty($mercurProduct['thumbnail']) && $isNew) {
                 $product->setCustomAttribute('mercur_thumbnail', (string) $mercurProduct['thumbnail']);
             }
-
             $this->attributes->apply($product, $mercurProduct['attributes'] ?? [], $variant);
-            $this->products->save($product);
+            $children[] = $this->products->save($product);
             $skus[] = $sku;
         }
 
+        if ($asChildren) {
+            $parentSku = $this->configurable->build($mercurProduct, $children, $axisCodes, $websiteIds);
+            if ($parentSku !== null) {
+                $skus[] = $parentSku;
+            }
+        }
+
         return $skus;
+    }
+
+    /**
+     * Imported products go to the websites in the catalog settings, or else
+     * to every website that sells marketplace offers.
+     *
+     * @return int[]
+     */
+    private function websiteIds(): array
+    {
+        $configured = $this->config->getWebsiteIds();
+        if ($configured !== []) {
+            return $configured;
+        }
+        $selling = array_keys($this->websiteScope->all());
+        if ($selling !== []) {
+            return $selling;
+        }
+
+        return array_map(static fn ($website) => (int) $website->getId(), $this->storeManager->getWebsites());
     }
 
     private function find(string $sku): ?ProductInterface
@@ -79,13 +124,5 @@ class Importer
         } catch (NoSuchEntityException) {
             return null;
         }
-    }
-
-    /**
-     * @return int[]
-     */
-    private function allWebsiteIds(): array
-    {
-        return [0];
     }
 }

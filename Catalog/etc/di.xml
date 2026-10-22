@@ -22,6 +22,9 @@
                 <item name="product.published" xsi:type="array">
                     <item name="sync" xsi:type="object">Mercur\Catalog\Model\Webhook\EnqueueProductSync</item>
                 </item>
+                <item name="product.rejected" xsi:type="array">
+                    <item name="disable" xsi:type="object">Mercur\Catalog\Model\Webhook\DisableRejectedProduct</item>
+                </item>
             </argument>
         </arguments>
     </type>

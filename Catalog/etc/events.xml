@@ -6,4 +6,7 @@
     <event name="catalog_entity_attribute_save_after">
         <observer name="mercur_push_attribute" instance="Mercur\Catalog\Observer\PushCategoryOnSave"/>
     </event>
+    <event name="mercur_offers_imported">
+        <observer name="mercur_update_imported_stock" instance="Mercur\Catalog\Observer\UpdateImportedStock"/>
+    </event>
 </config>

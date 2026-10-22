@@ -24,6 +24,12 @@
                     <label>Visibility of imported products</label>
                     <source_model>Magento\Catalog\Model\Product\Visibility</source_model>
                 </field>
+                <field id="website_ids" translate="label comment" type="multiselect" sortOrder="60" showInDefault="1">
+                    <label>Websites for imported products</label>
+                    <source_model>Magento\Config\Model\Config\Source\Website</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment>Leave empty to use every website where the connector is enabled with a Mercur region.</comment>
+                </field>
             </group>
         </section>
     </system>

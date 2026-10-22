@@ -4,6 +4,8 @@
         <sequence>
             <module name="Mercur_Connector"/>
             <module name="Magento_Catalog"/>
+            <module name="Magento_CatalogInventory"/>
+            <module name="Magento_ConfigurableProduct"/>
         </sequence>
     </module>
 </config>

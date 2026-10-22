@@ -32,6 +32,16 @@ class CatalogConfig
         return (int) $this->scopeConfig->getValue('mercur/catalog/imported_product_status') ?: 1;
     }
 
+    /**
+     * @return int[]
+     */
+    public function getWebsiteIds(): array
+    {
+        $raw = (string) $this->scopeConfig->getValue('mercur/catalog/website_ids');
+
+        return array_values(array_filter(array_map('intval', explode(',', $raw))));
+    }
+
     public function getImportedProductVisibility(): int
     {
         return (int) $this->scopeConfig->getValue('mercur/catalog/imported_product_visibility') ?: 4;
