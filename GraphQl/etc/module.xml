@@ -3,7 +3,11 @@
     <module name="Mercur_GraphQl">
         <sequence>
             <module name="Mercur_OfferIndexer"/>
+            <module name="Mercur_Connector"/>
             <module name="Magento_CatalogGraphQl"/>
+            <module name="Magento_QuoteGraphQl"/>
+            <module name="Magento_SalesGraphQl"/>
+            <module name="Magento_ConfigurableProduct"/>
         </sequence>
     </module>
 </config>

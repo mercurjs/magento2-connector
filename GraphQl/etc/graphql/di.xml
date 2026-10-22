@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Quote\Model\Cart\Data\CartItemFactory">
+        <plugin name="mercur_map_offer_to_entered_option" type="Mercur\GraphQl\Plugin\MapOfferToEnteredOption"/>
+    </type>
+    <type name="Magento\Quote\Model\Cart\BuyRequest\BuyRequestBuilder">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="mercur_offer" xsi:type="object">Mercur\GraphQl\Model\BuyRequest\OfferDataProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\QuoteGraphQl\Model\Cart\BuyRequest\BuyRequestBuilder">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="mercur_offer" xsi:type="object">Mercur\GraphQl\Model\BuyRequest\LegacyOfferDataProvider</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -1,20 +1,35 @@
 interface ProductInterface {
-    mercur_offers: [MercurOffer] @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\ProductOffers") @doc(description: "Marketplace offers for this product, cheapest first.")
+    mercur_offers: [MercurOffer] @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\ProductOffers") @doc(description: "Marketplace offers for this product, cheapest first. On a configurable product, the offers of its variants.")
     mercur_buy_box: MercurBuyBox @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\ProductBuyBox") @doc(description: "Best way to buy this product across the operator's stock and seller offers.")
 }
 
 type MercurOffer @doc(description: "A seller's offer against a product.") {
     id: String!
+    sku: String @doc(description: "The Magento SKU the offer sells. Differs from the product SKU on a configurable product.")
     seller_id: String!
     seller_name: String
     seller_premium: Boolean
+    seller: MercurSellerSummary
     price: Float!
-    origin_price: Float
+    origin_price: Float @doc(description: "Price before a Mercur price list discount, for a strike-through.")
+    price_ranges: [MercurPriceRange] @doc(description: "Quantity tier prices.")
     currency_code: String
     quantity: Int
     leadtime_to_ship: Int
+    estimated_delivery: MercurDeliveryWindow
     condition_code: String
     is_best: Boolean!
+}
+
+type MercurPriceRange {
+    min_quantity: Int
+    max_quantity: Int
+    amount: Float!
+}
+
+type MercurDeliveryWindow {
+    from: String! @doc(description: "Earliest delivery date, YYYY-MM-DD.")
+    to: String! @doc(description: "Latest delivery date, YYYY-MM-DD.")
 }
 
 type MercurBuyBox {
@@ -25,4 +40,103 @@ type MercurBuyBox {
     max_price: Float
     offer_count: Int!
     operator_available: Boolean!
+}
+
+type MercurSellerSummary {
+    id: String!
+    name: String
+    handle: String
+    url: String
+    logo: String
+    premium: Boolean
+}
+
+type MercurSeller @doc(description: "A marketplace seller's public profile.") {
+    id: String!
+    name: String!
+    handle: String!
+    url: String
+    description: String
+    logo: String
+    banner: String
+    premium: Boolean!
+    city: String
+    country_code: String
+    selling_since: String
+}
+
+input CartItemInput {
+    mercur_offer_id: String @doc(description: "Buy this line from a seller offer instead of the operator's stock.")
+}
+
+interface CartItemInterface {
+    mercur_offer: MercurCartItemOffer @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\CartItemOffer") @doc(description: "The seller offer this line is bought from; null for the operator's stock.")
+}
+
+type MercurCartItemOffer {
+    offer_id: String!
+    seller: MercurSellerSummary
+}
+
+type Cart {
+    mercur_sellers: [MercurCartSeller!]! @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\CartSellers") @doc(description: "The marketplace lines grouped by seller, with each seller's shipping options.")
+}
+
+type CartPrices {
+    mercur_shipping: Money @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\CartMarketplaceShipping") @doc(description: "What the sellers charge for shipping, on top of the cart's own shipping.")
+}
+
+type MercurCartSeller {
+    seller: MercurSellerSummary!
+    items: [MercurCartSellerItem!]!
+    shipping_options: [MercurShippingOption!]!
+    estimated_delivery: MercurDeliveryWindow
+}
+
+type MercurCartSellerItem {
+    item_id: Int!
+    sku: String!
+    name: String
+    quantity: Float!
+}
+
+type MercurShippingOption {
+    id: String!
+    name: String
+    amount: Float!
+    selected: Boolean!
+    estimated_delivery: MercurDeliveryWindow
+}
+
+input SetMercurShippingMethodsInput {
+    cart_id: String!
+    shipping_methods: [MercurShippingMethodInput!]!
+}
+
+input MercurShippingMethodInput {
+    seller_id: String!
+    option_id: String!
+}
+
+type SetMercurShippingMethodsOutput {
+    cart: Cart!
+}
+
+interface OrderItemInterface {
+    mercur: MercurOrderItem @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\OrderItemMarketplace") @doc(description: "Seller and marketplace status of this line; null for the operator's stock.")
+}
+
+type MercurOrderItem {
+    seller: MercurSellerSummary
+    seller_order_id: String
+    status: String
+    status_label: String
+}
+
+type Query {
+    mercurSeller(handle: String!): MercurSeller @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\Seller") @doc(description: "A seller's public profile by handle.")
+}
+
+type Mutation {
+    setMercurShippingMethods(input: SetMercurShippingMethodsInput!): SetMercurShippingMethodsOutput @resolver(class: "Mercur\\GraphQl\\Model\\Resolver\\SetShippingMethods") @doc(description: "Choose one shipping option per seller for the cart's marketplace lines.")
 }
