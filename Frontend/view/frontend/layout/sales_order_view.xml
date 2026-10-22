@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mercur_Frontend::css/offers.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Mercur\Frontend\Block\Order\MarketplaceOrders" name="mercur.order.marketplace" template="Mercur_Frontend::order/marketplace.phtml" after="sales.order.info.links" cacheable="false"/>
+        </referenceContainer>
+    </body>
+</page>

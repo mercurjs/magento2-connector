@@ -5,6 +5,8 @@
             <module name="Mercur_OfferIndexer"/>
             <module name="Magento_Catalog"/>
             <module name="Magento_Checkout"/>
+            <module name="Magento_ConfigurableProduct"/>
+            <module name="Magento_Sales"/>
         </sequence>
     </module>
 </config>

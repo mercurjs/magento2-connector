@@ -1,0 +1,50 @@
+<?php
+/** @var \Mercur\Frontend\Block\Order\MarketplaceOrders $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$rows = $block->getRows();
+if ($rows === []) {
+    return;
+}
+?>
+<div class="block mercur-marketplace-orders" data-testid="mercur-marketplace-orders">
+    <div class="block-title"><strong><?= $escaper->escapeHtml(__('Sellers')) ?></strong></div>
+    <div class="block-content">
+        <table class="data table">
+            <thead>
+                <tr>
+                    <th scope="col"><?= $escaper->escapeHtml(__('Seller')) ?></th>
+                    <th scope="col"><?= $escaper->escapeHtml(__('Items')) ?></th>
+                    <th scope="col"><?= $escaper->escapeHtml(__('Shipping')) ?></th>
+                    <th scope="col"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                    <th scope="col"><?= $escaper->escapeHtml(__('Tracking')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rows as $row): ?>
+                    <tr>
+                        <td>
+                            <?php if ($row['seller_url']): ?>
+                                <a href="<?= $escaper->escapeUrl($row['seller_url']) ?>"><?= $escaper->escapeHtml($row['seller_name']) ?></a>
+                            <?php else: ?>
+                                <?= $escaper->escapeHtml($row['seller_name']) ?>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php foreach ($row['items'] as $item): ?>
+                                <div><?= $escaper->escapeHtml($item['name']) ?> &times; <?= (float) $item['qty'] ?></div>
+                            <?php endforeach; ?>
+                        </td>
+                        <td><?= $escaper->escapeHtml($row['shipping_method']) ?></td>
+                        <td><?= $escaper->escapeHtml($block->getStatusLabel($row['status'])) ?></td>
+                        <td>
+                            <?php foreach ($row['tracks'] as $track): ?>
+                                <div><?= $escaper->escapeHtml(trim($track['title'] . ' ' . $track['number'])) ?></div>
+                            <?php endforeach; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>

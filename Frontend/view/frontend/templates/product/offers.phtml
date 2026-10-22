@@ -3,8 +3,8 @@
 /** @var \Magento\Framework\Escaper $escaper */
 
 $product = $block->getProduct();
-$offers = $block->isEnabled() ? $block->getOffers() : [];
-if (!$product || $offers === []) {
+$rows = $block->isEnabled() ? $block->getRows() : [];
+if (!$product || $rows === []) {
     return;
 }
 $formKey = $block->getLayout()->getBlock('formkey');
@@ -18,18 +18,33 @@ $formKey = $block->getLayout()->getBlock('formkey');
                 <span class="mercur-offer__badge"><?= $escaper->escapeHtml(__('Best offer')) ?></span>
             </li>
         <?php endif; ?>
-        <?php foreach ($offers as $offer): ?>
+        <?php foreach ($rows as $row): ?>
+            <?php $offer = $row['offer']; $sellerUrl = $block->getSellerUrl($offer); $delivery = $block->getDeliveryLabel($offer); ?>
             <li class="mercur-offer<?= $block->isBest($offer) ? ' mercur-offer--best' : '' ?>" data-offer-id="<?= $escaper->escapeHtmlAttr($offer->getOfferId()) ?>">
-                <span class="mercur-offer__seller"><?= $escaper->escapeHtml((string) $offer->getData('seller_name')) ?></span>
+                <span class="mercur-offer__seller">
+                    <?php if ($sellerUrl): ?>
+                        <a href="<?= $escaper->escapeUrl($sellerUrl) ?>"><?= $escaper->escapeHtml($offer->getSellerName()) ?></a>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml($offer->getSellerName()) ?>
+                    <?php endif; ?>
+                    <?php if ($row['label']): ?>
+                        <span class="mercur-offer__variant"><?= $escaper->escapeHtml($row['label']) ?></span>
+                    <?php endif; ?>
+                </span>
                 <?php if ($offer->getData('seller_premium')): ?>
                     <span class="mercur-offer__badge mercur-offer__badge--premium"><?= $escaper->escapeHtml(__('Premium seller')) ?></span>
                 <?php endif; ?>
                 <?php if ($block->isBest($offer)): ?>
                     <span class="mercur-offer__badge"><?= $escaper->escapeHtml(__('Best offer')) ?></span>
                 <?php endif; ?>
+                <?php if ($offer->getOriginPrice() !== null && $offer->getOriginPrice() > $offer->getPrice()): ?>
+                    <span class="mercur-offer__origin-price"><?= /* @noEscape */ $block->formatPrice($offer->getOriginPrice()) ?></span>
+                <?php endif; ?>
                 <span class="mercur-offer__price"><?= /* @noEscape */ $block->formatPrice($offer->getPrice()) ?></span>
-                <?php if ($offer->getData('leadtime_to_ship')): ?>
-                    <span class="mercur-offer__leadtime"><?= $escaper->escapeHtml(__('Ships in %1 day(s)', (int) $offer->getData('leadtime_to_ship'))) ?></span>
+                <?php if ($delivery): ?>
+                    <span class="mercur-offer__estimate"><?= $escaper->escapeHtml($delivery) ?></span>
+                <?php elseif ($offer->getLeadtimeToShip()): ?>
+                    <span class="mercur-offer__leadtime"><?= $escaper->escapeHtml(__('Ships in %1 day(s)', $offer->getLeadtimeToShip())) ?></span>
                 <?php endif; ?>
                 <?php if ($offer->getData('condition_code')): ?>
                     <span class="mercur-offer__condition"><?= $escaper->escapeHtml((string) $offer->getData('condition_code')) ?></span>
@@ -37,12 +52,23 @@ $formKey = $block->getLayout()->getBlock('formkey');
                 <form method="post" action="<?= $escaper->escapeUrl($block->getAddToCartUrl()) ?>" class="mercur-offer__form">
                     <input type="hidden" name="product" value="<?= $escaper->escapeHtmlAttr((string) $product->getId()) ?>"/>
                     <input type="hidden" name="mercur_offer_id" value="<?= $escaper->escapeHtmlAttr($offer->getOfferId()) ?>"/>
-                    <input type="hidden" name="qty" value="1"/>
+                    <?php foreach ($row['super_attribute'] as $attributeId => $value): ?>
+                        <input type="hidden" name="super_attribute[<?= (int) $attributeId ?>]" value="<?= $escaper->escapeHtmlAttr($value) ?>"/>
+                    <?php endforeach; ?>
+                    <input type="number" name="qty" value="1" min="1" class="mercur-offer__qty" aria-label="<?= $escaper->escapeHtmlAttr(__('Qty')) ?>"/>
                     <?php if ($formKey): ?><?= /* @noEscape */ $formKey->toHtml() ?><?php endif; ?>
                     <button type="submit" class="action primary mercur-offer__add" <?= $offer->isAvailable() ? '' : 'disabled' ?>>
                         <span><?= $escaper->escapeHtml($offer->isAvailable() ? __('Add to Cart') : __('Out of stock')) ?></span>
                     </button>
                 </form>
+                <?php $tiers = $block->getTierLabels($offer); ?>
+                <?php if ($tiers !== []): ?>
+                    <ul class="mercur-offer__tiers">
+                        <?php foreach ($tiers as $tier): ?>
+                            <li><?= $escaper->escapeHtml($tier) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ul>

@@ -1,0 +1,10 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<div id="mercur-cart-sellers" class="mercur-cart-sellers" data-bind="scope: 'mercurCartSellers'">
+    <!-- ko template: getTemplate() --><!-- /ko -->
+</div>
+<script type="text/x-magento-init">
+    {"#mercur-cart-sellers": {"Magento_Ui/js/core/app": <?= /* @noEscape */ $block->getJsLayout() ?>}}
+</script>

@@ -1,0 +1,61 @@
+<?php
+/** @var \Mercur\Frontend\Block\Seller\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$seller = $block->getSeller();
+if (!$seller) {
+    return;
+}
+$products = $block->getProducts();
+?>
+<div class="mercur-seller-page" data-testid="mercur-seller-page">
+    <?php if ($seller->getData('banner')): ?>
+        <img class="mercur-seller-page__banner" src="<?= $escaper->escapeUrl((string) $seller->getData('banner')) ?>" alt=""/>
+    <?php endif; ?>
+    <div class="mercur-seller-page__header">
+        <?php if ($seller->getData('logo')): ?>
+            <img class="mercur-seller-page__logo" src="<?= $escaper->escapeUrl((string) $seller->getData('logo')) ?>" alt="<?= $escaper->escapeHtmlAttr($seller->getName()) ?>"/>
+        <?php endif; ?>
+        <div>
+            <?php if ($seller->isPremium()): ?>
+                <span class="mercur-offer__badge mercur-offer__badge--premium"><?= $escaper->escapeHtml(__('Premium seller')) ?></span>
+            <?php endif; ?>
+            <p class="mercur-seller-page__meta">
+                <?= $escaper->escapeHtml(implode(' · ', array_filter([
+                    $block->getLocation(),
+                    $block->getSellingSince() ? (string) __('Selling since %1', $block->getSellingSince()) : null,
+                ]))) ?>
+            </p>
+        </div>
+    </div>
+    <?php if ($seller->getData('description')): ?>
+        <div class="mercur-seller-page__description"><?= $escaper->escapeHtml((string) $seller->getData('description'), ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li']) ?></div>
+    <?php endif; ?>
+
+    <h2><?= $escaper->escapeHtml(__('Products from %1', $seller->getName())) ?></h2>
+    <?php if (!$products->count()): ?>
+        <div class="message info empty"><div><?= $escaper->escapeHtml(__('This seller has no products on sale right now.')) ?></div></div>
+    <?php else: ?>
+        <div class="products wrapper grid products-grid">
+            <ol class="products list items product-items">
+                <?php foreach ($products as $product): ?>
+                    <li class="item product product-item">
+                        <div class="product-item-info">
+                            <a href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>" class="product photo product-item-photo">
+                                <?= $block->getImage($product, 'category_page_grid')->toHtml() ?>
+                            </a>
+                            <div class="product details product-item-details">
+                                <strong class="product name product-item-name">
+                                    <a class="product-item-link" href="<?= $escaper->escapeUrl($product->getProductUrl()) ?>"><?= $escaper->escapeHtml($product->getName()) ?></a>
+                                </strong>
+                                <?php if ($price = $block->getSellerPrice((int) $product->getId())): ?>
+                                    <span class="price"><?= /* @noEscape */ $price ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+    <?php endif; ?>
+</div>

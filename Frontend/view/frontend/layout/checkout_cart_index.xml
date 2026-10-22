@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mercur_Frontend::css/offers.css"/>
+    </head>
+    <body>
+        <referenceContainer name="checkout.cart.items">
+            <block class="Magento\Framework\View\Element\Template" name="mercur.cart.sellers" template="Mercur_Frontend::cart/sellers.phtml" after="checkout.cart.form">
+                <arguments>
+                    <argument name="jsLayout" xsi:type="array">
+                        <item name="components" xsi:type="array">
+                            <item name="mercurCartSellers" xsi:type="array">
+                                <item name="component" xsi:type="string">Mercur_Frontend/js/view/seller-shipping</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+        <referenceBlock name="checkout.cart.totals">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="block-totals" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="mercur_shipping" xsi:type="array">
+                                    <item name="component" xsi:type="string">Mercur_Frontend/js/view/summary/marketplace-shipping</item>
+                                    <item name="sortOrder" xsi:type="string">25</item>
+                                    <item name="config" xsi:type="array">
+                                        <item name="title" xsi:type="string" translate="true">Seller shipping</item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

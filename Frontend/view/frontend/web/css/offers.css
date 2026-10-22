@@ -9,3 +9,25 @@
 .mercur-offer__price { font-weight: 700; }
 .mercur-offer__leadtime, .mercur-offer__condition { color: #666; font-size: 0.9rem; }
 .mercur-offer__form { margin-left: auto; }
+.mercur-offer__origin-price { color: #888; text-decoration: line-through; font-size: 0.9rem; }
+.mercur-offer__tiers { flex-basis: 100%; margin: 0; padding: 0; list-style: none; color: #555; font-size: 0.9rem; }
+.mercur-offer__estimate { color: #1f6b2f; font-size: 0.9rem; }
+.mercur-sellers { margin: 16px 0; }
+.mercur-seller-panel { border: 1px solid #e2e2e2; border-radius: 4px; padding: 12px 16px; margin-bottom: 12px; }
+.mercur-seller-panel__title { font-weight: 600; margin-bottom: 8px; }
+.mercur-seller-panel__items { list-style: none; margin: 0 0 8px; padding: 0; color: #555; }
+.mercur-seller-panel__options { border: 0; margin: 0; padding: 0; }
+.mercur-seller-panel__legend { font-size: 0.9rem; color: #666; margin-bottom: 4px; }
+.mercur-seller-option { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; cursor: pointer; }
+.mercur-seller-option__price { font-weight: 600; }
+.mercur-seller-option__estimate, .mercur-seller-panel__estimate { color: #1f6b2f; font-size: 0.9rem; }
+.mercur-seller-panel__hint { color: #666; margin: 0; }
+.mercur-seller-panel__chosen { display: flex; flex-wrap: wrap; gap: 8px; }
+.mercur-seller-page__header { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+.mercur-seller-page__logo { width: 72px; height: 72px; object-fit: contain; border: 1px solid #e2e2e2; border-radius: 4px; }
+.mercur-seller-page__banner { width: 100%; max-height: 240px; object-fit: cover; margin-bottom: 16px; }
+.mercur-seller-page__meta { color: #666; }
+.mercur-marketplace-orders { margin: 24px 0; }
+.mercur-marketplace-orders table { width: 100%; }
+.mercur-offer__variant { display: block; font-weight: 400; color: #666; font-size: 0.9rem; }
+.mercur-offer__qty { width: 64px; margin-right: 8px; }
