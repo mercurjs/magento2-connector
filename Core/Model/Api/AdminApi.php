@@ -11,6 +11,15 @@ use Mercur\Core\Model\Config;
  */
 class AdminApi
 {
+    /**
+     * The offer → inventory link already yields the inventory item in `inventory_items[]`,
+     * so its levels sit directly under each entry.
+     */
+    public const OFFER_FIELDS = '+inventory_items.location_levels.stocked_quantity,'
+        . '+inventory_items.location_levels.reserved_quantity,'
+        . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
+        . '+seller.default_leadtime_to_ship,+product_variant.product_id';
+
     public function __construct(
         private readonly Client $client,
         private readonly Config $config
@@ -25,10 +34,7 @@ class AdminApi
             'order' => 'updated_at',
             'limit' => $limit ?? $this->config->getPageSize(),
             'offset' => $offset,
-            'fields' => '+inventory_items.inventory_item.location_levels.stocked_quantity,'
-                . '+inventory_items.inventory_item.location_levels.reserved_quantity,'
-                . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
-                . '+seller.default_leadtime_to_ship,+product_variant.product_id',
+            'fields' => self::OFFER_FIELDS,
         ], $this->client->adminHeaders());
     }
 

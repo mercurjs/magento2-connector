@@ -48,9 +48,10 @@ class OfferMapper
         }
         $available = null;
         foreach ($inventoryItems as $link) {
+            // The link does not expand required_quantity, so a kit counts one unit per component.
             $required = max(1, (int) ($link['required_quantity'] ?? 1));
             $stocked = 0;
-            foreach ($link['inventory_item']['location_levels'] ?? [] as $level) {
+            foreach ($link['location_levels'] ?? [] as $level) {
                 $stocked += (int) ($level['stocked_quantity'] ?? 0) - (int) ($level['reserved_quantity'] ?? 0);
             }
             $units = intdiv(max(0, $stocked), $required);
