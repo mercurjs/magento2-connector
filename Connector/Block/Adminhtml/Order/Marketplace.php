@@ -23,6 +23,21 @@ class Marketplace extends Template
         parent::__construct($context, $data);
     }
 
+    public function hasMarketplaceLines(): bool
+    {
+        $order = $this->getOrder();
+        if ($order === null) {
+            return false;
+        }
+        foreach ($order->getAllItems() as $item) {
+            if ($item->getData('mercur_offer_id')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isShippingLocked(): bool
     {
         $order = $this->getOrder();

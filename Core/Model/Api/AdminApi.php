@@ -107,6 +107,14 @@ class AdminApi
         return $this->client->post('/admin/product-attributes/' . $attributeId . '/values', $payload, $this->client->adminHeaders());
     }
 
+    /**
+     * The group with its child orders; cart completion answers with the group alone.
+     */
+    public function getOrderGroup(string $groupId): array
+    {
+        return $this->client->get('/admin/order-groups/' . $groupId, ['fields' => 'id,display_id,orders.id'], $this->client->adminHeaders())['order_group'] ?? [];
+    }
+
     public function getOrder(string $orderId, string $fields): array
     {
         return $this->client->get('/admin/orders/' . $orderId, ['fields' => $fields], $this->client->adminHeaders())['order'] ?? [];

@@ -43,6 +43,15 @@ final class AdminApiTest extends TestCase
         $this->api->listOffers('2026-01-01T00:00:00Z', 0);
     }
 
+    public function testAnOrderGroupIsReadWithItsChildOrders(): void
+    {
+        $this->client->expects(self::once())->method('get')
+            ->with('/admin/order-groups/og_1', ['fields' => 'id,display_id,orders.id'])
+            ->willReturn(['order_group' => ['id' => 'og_1', 'orders' => [['id' => 'order_1']]]]);
+
+        self::assertSame([['id' => 'order_1']], $this->api->getOrderGroup('og_1')['orders']);
+    }
+
     public function testPublishedProductsAreListedWithVariantOptionValues(): void
     {
         $this->client->expects(self::once())->method('get')
