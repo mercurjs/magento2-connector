@@ -70,7 +70,7 @@ class ConfigurableBuilder
                     $this->config->getAttributeGroup()
                 ));
             }
-            if (!$this->configurableType->canUseAttribute($attribute)) {
+            if ($attribute->getFrontendInput() !== 'select' || !$this->configurableType->canUseAttribute($attribute)) {
                 $result->warn(sprintf(
                     'attribute "%s" cannot configure a product (%s); variants imported as standalone products',
                     $handle,
@@ -88,10 +88,11 @@ class ConfigurableBuilder
     private function unusableReason(ProductAttributeInterface $attribute): string
     {
         return match (true) {
+            $attribute->getFrontendInput() !== 'select' => sprintf('input "%s" is not a dropdown', $attribute->getFrontendInput()),
             $attribute->getScope() !== EavAttributeInterface::SCOPE_GLOBAL_TEXT => 'its scope is not global',
             !$attribute->getIsVisible() => 'it is not visible',
             !$attribute->getIsUserDefined() => 'it is a system attribute',
-            default => sprintf('input "%s" has no options', $attribute->getFrontendInput()),
+            default => 'it has no option source',
         };
     }
 

@@ -6,7 +6,7 @@ namespace Mercur\Catalog\Model\Taxonomy;
 
 use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
-use Magento\Eav\Model\ResourceModel\Entity\Attribute\Group\CollectionFactory as GroupCollectionFactory;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Mercur\Catalog\Model\CatalogConfig;
 use Mercur\Core\Model\Api\AdminApi;
@@ -20,27 +20,25 @@ class AttributePusher
     public function __construct(
         private readonly AdminApi $api,
         private readonly CatalogConfig $config,
-        private readonly GroupCollectionFactory $groups,
+        private readonly AttributeGroup $group,
         private readonly AttributeCollectionFactory $attributes,
         private readonly ProductAttributeRepositoryInterface $attributeRepository,
-        private readonly AttributeTypeMap $types
+        private readonly AttributeTypeMap $types,
+        private readonly Configurable $configurableType
     ) {
     }
 
     public function pushAll(callable $log): int
     {
-        $group = $this->groups->create()
-            ->addFieldToFilter('attribute_set_id', $this->config->getAttributeSetId())
-            ->addFieldToFilter('attribute_group_name', $this->config->getAttributeGroup())
-            ->getFirstItem();
-        if (!$group->getId()) {
+        $groupId = $this->group->find();
+        if ($groupId === null) {
             $log('No attribute group named ' . $this->config->getAttributeGroup() . ' in the configured attribute set');
 
             return 0;
         }
 
         $collection = $this->attributes->create();
-        $collection->setAttributeGroupFilter((int) $group->getId());
+        $collection->setAttributeGroupFilter($groupId);
 
         $count = 0;
         foreach ($collection as $row) {
@@ -56,8 +54,12 @@ class AttributePusher
     public function push(Attribute $attribute): ?string
     {
         $code = (string) $attribute->getAttributeCode();
-        $isAxis = (bool) $attribute->getData('is_global') && in_array($attribute->getFrontendInput(), ['select'], true)
-            && (bool) $attribute->getData('is_configurable');
+        $existing = $this->api->findAttributeByHandle($code);
+        // Magento 2 has no is_configurable flag: an attribute is an axis when a configurable can use it,
+        // which like the configurable wizard also requires a dropdown (booleans have a source too).
+        // An axis set in Mercur stays one, since its products already depend on it.
+        $isAxis = ($attribute->getFrontendInput() === 'select' && $this->configurableType->canUseAttribute($attribute))
+            || !empty($existing['is_variant_axis']);
 
         $values = [];
         if (in_array($attribute->getFrontendInput(), ['select', 'multiselect'], true)) {
@@ -84,7 +86,6 @@ class AttributePusher
             'metadata' => ['magento_attribute_id' => (int) $attribute->getAttributeId()],
         ];
 
-        $existing = $this->api->findAttributeByHandle($code);
         if ($existing) {
             $this->api->updateAttribute((string) $existing['id'], $payload);
             $known = array_map(static fn ($v) => $v['name'], $existing['values'] ?? []);
