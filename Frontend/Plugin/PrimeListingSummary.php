@@ -6,12 +6,15 @@ namespace Mercur\Frontend\Plugin;
 
 use Magento\Catalog\Block\Product\ListProduct;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Store\Model\StoreManagerInterface;
 use Mercur\Frontend\Model\ListingSummary;
 
 class PrimeListingSummary
 {
-    public function __construct(private readonly ListingSummary $summaries)
-    {
+    public function __construct(
+        private readonly ListingSummary $summaries,
+        private readonly StoreManagerInterface $storeManager
+    ) {
     }
 
     /**
@@ -27,7 +30,7 @@ class PrimeListingSummary
         foreach ($result as $product) {
             $skus[] = (string) $product->getSku();
         }
-        $this->summaries->prime($skus, (int) $result->getStore()->getWebsiteId());
+        $this->summaries->prime($skus, (int) $this->storeManager->getStore($result->getStoreId())->getWebsiteId());
 
         return $result;
     }
