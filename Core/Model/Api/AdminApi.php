@@ -11,6 +11,20 @@ use Mercur\Core\Model\Config;
  */
 class AdminApi
 {
+    /**
+     * The offer → inventory link already yields the inventory item in `inventory_items[]`,
+     * so its levels sit directly under each entry.
+     */
+    public const OFFER_FIELDS = '+inventory_items.location_levels.stocked_quantity,'
+        . '+inventory_items.location_levels.reserved_quantity,'
+        . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
+        . '+seller.default_leadtime_to_ship,+product_variant.product_id,'
+        . '+product_variant.ean,+product_variant.upc,+product_variant.barcode';
+
+    /** Variant option values are not in Mercur's default product fields; the axis values come from them. */
+    public const PRODUCT_FIELDS = '+variants.options.value,+variants.options.option.title,'
+        . '+variants.ean,+variants.upc,+variants.barcode,+variants.thumbnail,+images.url,+images.rank';
+
     public function __construct(
         private readonly Client $client,
         private readonly Config $config
@@ -25,10 +39,7 @@ class AdminApi
             'order' => 'updated_at',
             'limit' => $limit ?? $this->config->getPageSize(),
             'offset' => $offset,
-            'fields' => '+inventory_items.inventory_item.location_levels.stocked_quantity,'
-                . '+inventory_items.inventory_item.location_levels.reserved_quantity,'
-                . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
-                . '+seller.default_leadtime_to_ship,+product_variant.product_id',
+            'fields' => self::OFFER_FIELDS,
         ], $this->client->adminHeaders());
     }
 
@@ -53,6 +64,7 @@ class AdminApi
             'order' => 'updated_at',
             'limit' => $limit ?? $this->config->getPageSize(),
             'offset' => $offset,
+            'fields' => self::PRODUCT_FIELDS,
         ], $this->client->adminHeaders());
     }
 
@@ -93,6 +105,14 @@ class AdminApi
     public function createAttributeValue(string $attributeId, array $payload): array
     {
         return $this->client->post('/admin/product-attributes/' . $attributeId . '/values', $payload, $this->client->adminHeaders());
+    }
+
+    /**
+     * The group with its child orders; cart completion answers with the group alone.
+     */
+    public function getOrderGroup(string $groupId): array
+    {
+        return $this->client->get('/admin/order-groups/' . $groupId, ['fields' => 'id,display_id,orders.id'], $this->client->adminHeaders())['order_group'] ?? [];
     }
 
     public function getOrder(string $orderId, string $fields): array

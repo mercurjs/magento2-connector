@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mercur\Catalog\Model\Product;
 
 /**
- * The attribute handles that split a Mercur product into variants. A product
+ * The attributes that split a Mercur product into variants. A product
  * becomes a Magento configurable only when it has several variants and every
  * axis is a global attribute (an inline, product-scoped axis has no Magento
  * attribute to configure on).
@@ -13,16 +13,15 @@ namespace Mercur\Catalog\Model\Product;
 final class ConfigurableAxes
 {
     /**
-     * @return string[]|null axis handles, or null when the product stays a set of simple products
+     * @return array<int, array>|null axis attribute entries, or null when the product stays a set of simple products
      */
     public function fromProduct(array $mercurProduct): ?array
     {
-        $variants = array_filter($mercurProduct['variants'] ?? [], static fn ($v) => !empty($v['sku']));
-        if (count($variants) < 2) {
+        if ($this->variantCount($mercurProduct) < 2) {
             return null;
         }
 
-        $handles = [];
+        $axes = [];
         foreach ($mercurProduct['attributes'] ?? [] as $attribute) {
             if (empty($attribute['is_variant_axis'])) {
                 continue;
@@ -30,9 +29,28 @@ final class ConfigurableAxes
             if (!empty($attribute['is_scoped']) || empty($attribute['handle'])) {
                 return null;
             }
-            $handles[] = (string) $attribute['handle'];
+            $axes[] = $attribute;
         }
 
-        return $handles === [] ? null : $handles;
+        return $axes === [] ? null : $axes;
+    }
+
+    public function hasInlineAxis(array $mercurProduct): bool
+    {
+        if ($this->variantCount($mercurProduct) < 2) {
+            return false;
+        }
+        foreach ($mercurProduct['attributes'] ?? [] as $attribute) {
+            if (!empty($attribute['is_variant_axis']) && (!empty($attribute['is_scoped']) || empty($attribute['handle']))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function variantCount(array $mercurProduct): int
+    {
+        return count(array_filter($mercurProduct['variants'] ?? [], static fn ($v) => !empty($v['sku'])));
     }
 }

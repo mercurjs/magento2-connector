@@ -12,6 +12,10 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Catalog\Model\Product\Image\GalleryPlan;
+use Mercur\Catalog\Model\Product\Image\GalleryWriter;
+use Mercur\Connector\Model\Catalog\Identifier;
+use Mercur\Connector\Model\Catalog\ProductMatcher;
 use Mercur\Core\Model\Scope\WebsiteScope;
 
 /**
@@ -30,32 +34,52 @@ class Importer
         private readonly ConfigurableAxes $axes,
         private readonly ConfigurableBuilder $configurable,
         private readonly WebsiteScope $websiteScope,
-        private readonly StoreManagerInterface $storeManager
+        private readonly StoreManagerInterface $storeManager,
+        private readonly ProductMatcher $matcher,
+        private readonly GalleryWriter $gallery
     ) {
     }
 
-    /**
-     * @return string[] SKUs touched
-     */
-    public function import(array $mercurProduct): array
+    public function import(array $mercurProduct): ImportResult
     {
-        $axisHandles = $this->axes->fromProduct($mercurProduct);
-        $axisCodes = $axisHandles === null ? [] : $this->configurable->usableAxes($axisHandles);
+        $id = (string) ($mercurProduct['id'] ?? '?');
+        $result = new ImportResult(sprintf('%s (%s)', (string) ($mercurProduct['title'] ?? $id), $id));
+
+        $axes = $this->axes->fromProduct($mercurProduct);
+        $axisCodes = $axes === null ? [] : $this->configurable->usableAxes($axes, $result);
+        if ($axes === null && $this->axes->hasInlineAxis($mercurProduct)) {
+            $result->warn('variant axis is product-scoped; variants imported as standalone products');
+        }
         $asChildren = $axisCodes !== [];
         $websiteIds = $this->websiteIds();
 
-        $skus = [];
+        $variants = $mercurProduct['variants'] ?? [];
+        $this->matcher->prime(array_map(static fn (array $variant) => [
+            'sku' => $variant['sku'] ?? null,
+            'identifiers' => Identifier::fromVariant($variant),
+        ], $variants));
+
         $children = [];
-        foreach ($mercurProduct['variants'] ?? [] as $variant) {
+        foreach ($variants as $variant) {
             $sku = (string) ($variant['sku'] ?? '');
             if ($sku === '') {
                 continue;
             }
+            $target = $this->matcher->resolve($sku, Identifier::fromVariant($variant));
+            if ($target !== null && $target !== $sku) {
+                $result->note(sprintf('Variant %s matches your product %s by identifier; not imported', $sku, $target));
+                continue;
+            }
             $product = $this->find($sku);
             $isNew = $product === null;
+            if (!$isNew && (int) $product->getData('mercur_product') !== 1) {
+                $result->note(sprintf('Variant %s is one of your own products; not imported', $sku));
+                continue;
+            }
             $product ??= $this->productFactory->create();
             if ($isNew) {
-                $product->setSku($sku)
+                $product->setStoreId(0)
+                    ->setSku($sku)
                     ->setTypeId(Type::TYPE_SIMPLE)
                     ->setAttributeSetId($this->config->getAttributeSetId())
                     ->setStatus($this->config->getImportedProductStatus())
@@ -83,18 +107,21 @@ class Importer
                 $product->setCustomAttribute('mercur_thumbnail', (string) $mercurProduct['thumbnail']);
             }
             $this->attributes->apply($product, $mercurProduct['attributes'] ?? [], $variant);
+            if ($this->config->importImages()) {
+                $this->gallery->apply($product, GalleryPlan::urlsFor($mercurProduct, $variant, $asChildren), (string) $product->getName(), $result);
+            }
             $children[] = $this->products->save($product);
-            $skus[] = $sku;
+            $result->addSku($sku);
         }
 
-        if ($asChildren) {
-            $parentSku = $this->configurable->build($mercurProduct, $children, $axisCodes, $websiteIds);
+        if ($asChildren && $children !== []) {
+            $parentSku = $this->configurable->build($mercurProduct, $children, $axisCodes, $websiteIds, $result);
             if ($parentSku !== null) {
-                $skus[] = $parentSku;
+                $result->addSku($parentSku, true);
             }
         }
 
-        return $skus;
+        return $result;
     }
 
     /**
@@ -117,10 +144,13 @@ class Importer
         return array_map(static fn ($website) => (int) $website->getId(), $this->storeManager->getWebsites());
     }
 
+    /**
+     * Imported products are written at the default scope, so every store view sees the same product.
+     */
     private function find(string $sku): ?ProductInterface
     {
         try {
-            return $this->products->get($sku, true);
+            return $this->products->get($sku, true, 0);
         } catch (NoSuchEntityException) {
             return null;
         }

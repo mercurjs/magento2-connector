@@ -47,14 +47,23 @@ class ProductSync implements TaskInterface
         $process->output($since ? "Delta since $since" : 'Full import');
 
         $count = 0;
+        $parents = 0;
+        $images = 0;
+        $skippedImages = 0;
         $latest = $this->pager->walk(
             fn (int $offset) => $this->api->listPublishedProducts($since, $offset),
             'products',
-            function (array $rows) use (&$count, $process): void {
+            function (array $rows) use (&$count, &$parents, &$images, &$skippedImages, $process): void {
                 foreach ($rows as $product) {
                     try {
-                        $skus = $this->importer->import($product);
-                        $count += count($skus);
+                        $result = $this->importer->import($product);
+                        foreach ($result->lines() as $line) {
+                            $process->output($line);
+                        }
+                        $count += $result->variantCount();
+                        $parents += $result->parentCount();
+                        $images += $result->imagesAttached();
+                        $skippedImages += $result->imagesSkipped();
                     } catch (\Throwable $e) {
                         $process->output(sprintf('Skipped %s: %s', $product['id'] ?? '?', $e->getMessage()));
                     }
@@ -65,6 +74,12 @@ class ProductSync implements TaskInterface
         if ($latest) {
             $this->cursor->set(self::CODE, $latest);
         }
-        $process->output("Imported $count variant(s)");
+        $process->output(sprintf(
+            'Imported %d variant(s), %d configurable parent(s), %d image(s) attached, %d image(s) skipped',
+            $count,
+            $parents,
+            $images,
+            $skippedImages
+        ));
     }
 }

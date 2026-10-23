@@ -4,7 +4,7 @@
 
 $order = $block->getOrder();
 $rows = $block->getRows();
-if (!$order || $rows === []) {
+if (!$order || ($rows === [] && !$block->hasMarketplaceLines())) {
     return;
 }
 ?>
@@ -17,6 +17,14 @@ if (!$order || $rows === []) {
             <?= $escaper->escapeHtml(__('Mercur order group')) ?>:
             <strong><?= $escaper->escapeHtml((string) ($order->getData('mercur_order_group_id') ?: __('not created yet'))) ?></strong>
         </p>
+        <?php if ($block->isShippingLocked()): ?>
+            <div class="message message-notice">
+                <?= $escaper->escapeHtml(__('Seller lines are shipped by their sellers. A Magento shipment is recorded for each fulfillment Mercur reports; they cannot be shipped from here.')) ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($rows === []): ?>
+            <p><?= $escaper->escapeHtml(__('The seller orders appear here once Mercur has confirmed the order.')) ?></p>
+        <?php else: ?>
         <table class="data-table admin__table-primary">
             <thead>
                 <tr>
@@ -54,5 +62,6 @@ if (!$order || $rows === []) {
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <?php endif; ?>
     </div>
 </section>

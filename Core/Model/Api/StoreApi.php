@@ -17,12 +17,13 @@ class StoreApi
 
     public function createCart(string $regionId, string $salesChannelId, string $currencyCode, array $metadata, ?int $storeId = null): array
     {
-        return $this->client->post('/store/carts', [
+        // An empty currency would override the region's; leaving it out lets Mercur fall back to it.
+        return $this->client->post('/store/carts', array_filter([
             'region_id' => $regionId,
             'sales_channel_id' => $salesChannelId,
             'currency_code' => strtolower($currencyCode),
             'metadata' => $metadata,
-        ], $this->client->storeHeaders($storeId), $storeId)['cart'] ?? [];
+        ], static fn ($value) => $value !== '' && $value !== []), $this->client->storeHeaders($storeId), $storeId)['cart'] ?? [];
     }
 
     public function getCart(string $cartId, ?int $storeId = null): array

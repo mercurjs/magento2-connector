@@ -72,6 +72,12 @@
                 <field id="operator_label" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Label for your own stock</label>
                 </field>
+                <field id="identifier_attributes" translate="label comment" type="multiselect" sortOrder="30" showInDefault="1">
+                    <label>Identifier attributes</label>
+                    <source_model>Mercur\Connector\Model\Config\Source\ProductTextAttribute</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment>Product attributes holding an EAN, UPC or GTIN. An offer whose Mercur SKU is unknown to Magento is attached to the product whose identifier matches the offer's EAN, UPC or barcode, and a published seller variant that matches is not imported again. Run a full offer sync after changing this.</comment>
+                </field>
             </group>
             <group id="delivery" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1">
                 <label>Delivery estimates</label>
@@ -118,6 +124,11 @@
                     <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
                     <comment>The order is sent once it is committed in one of these statuses. Orders left behind are retried on the order retry schedule.</comment>
                     <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="lock_seller_shipping" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Leave seller lines to the sellers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Yes keeps seller lines out of shipments created in Magento; the connector records a shipment for every fulfillment Mercur reports. Invoices, cancellations and credit memos are not affected.</comment>
                 </field>
             </group>
             <group id="webhook" translate="label" type="text" sortOrder="30" showInDefault="1">

@@ -2,18 +2,6 @@
 /** @var \Mercur\Process\Block\Adminhtml\Process\View $block */
 /** @var \Magento\Framework\Escaper $escaper */
 $process = $block->getProcess();
-$rows = [
-    __('Task') => $process->getCode(),
-    __('Name') => (string) $process->getData('name'),
-    __('Status') => $block->getStatusLabel($process->getStatus()),
-    __('Attempts') => $process->getAttempts() . ' / ' . $process->getMaxAttempts(),
-    __('Created') => $block->formatStamp($process->getData('created_at')),
-    __('Started') => $block->formatStamp($process->getData('started_at')),
-    __('Finished') => $block->formatStamp($process->getData('finished_at')),
-    __('Next run') => $block->formatStamp($process->getData('next_run_at')),
-    __('Duration') => $process->getData('duration') !== null ? $process->getData('duration') . ' s' : '—',
-    __('Runner') => (string) ($process->getData('locked_by') ?: '—'),
-];
 ?>
 <div class="mercur-process-view">
     <div class="page-actions" style="margin-bottom:1.5rem;display:flex;gap:.5rem;">
@@ -50,7 +38,7 @@ $rows = [
 
     <table class="admin__table-secondary" style="max-width:640px;margin-bottom:1.5rem;">
         <tbody>
-        <?php foreach ($rows as $label => $value): ?>
+        <?php foreach ($block->getRows() as $label => $value): ?>
             <tr>
                 <th scope="row"><?= $escaper->escapeHtml($label) ?></th>
                 <td><?= $escaper->escapeHtml($value) ?></td>

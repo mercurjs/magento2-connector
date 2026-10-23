@@ -30,10 +30,10 @@ final class OfferMapperTest extends TestCase
                 ['amount' => 22, 'currency_code' => 'eur', 'min_quantity' => null, 'max_quantity' => null],
             ],
             'inventory_items' => [
-                ['required_quantity' => 1, 'inventory_item' => ['location_levels' => [
+                ['required_quantity' => 1, 'location_levels' => [
                     ['stocked_quantity' => 10, 'reserved_quantity' => 2],
                     ['stocked_quantity' => 5, 'reserved_quantity' => 0],
-                ]]],
+                ]],
             ],
         ];
         if (isset($overrides['seller'])) {
@@ -59,12 +59,20 @@ final class OfferMapperTest extends TestCase
     {
         $row = (new OfferMapper(new SellerMapper()))->map($this->offer([
             'inventory_items' => [
-                ['required_quantity' => 2, 'inventory_item' => ['location_levels' => [['stocked_quantity' => 9, 'reserved_quantity' => 0]]]],
-                ['required_quantity' => 1, 'inventory_item' => ['location_levels' => [['stocked_quantity' => 100, 'reserved_quantity' => 0]]]],
+                ['required_quantity' => 2, 'location_levels' => [['stocked_quantity' => 9, 'reserved_quantity' => 0]]],
+                ['required_quantity' => 1, 'location_levels' => [['stocked_quantity' => 100, 'reserved_quantity' => 0]]],
             ],
         ]));
 
         self::assertSame(4, $row['quantity']);
+    }
+
+    public function testInventoryWithoutLevelsCountsAsNoStock(): void
+    {
+        $mapper = new OfferMapper(new SellerMapper());
+
+        self::assertSame(0, $mapper->map($this->offer(['inventory_items' => [['id' => 'iitem_1']]]))['quantity']);
+        self::assertNull($mapper->map($this->offer(['inventory_items' => []]))['quantity']);
     }
 
     public function testSuspendedOrClosedSellerDeactivatesTheOffer(): void
@@ -77,6 +85,14 @@ final class OfferMapperTest extends TestCase
             'closed_from' => '2000-01-01T00:00:00Z',
             'closed_to' => '2999-01-01T00:00:00Z',
         ]]))['active']);
+    }
+
+    public function testAResolvedProductSkuOverridesTheVariantSku(): void
+    {
+        $row = (new OfferMapper(new SellerMapper()))->map($this->offer(), 'OPERATOR-SKU');
+
+        self::assertSame('OPERATOR-SKU', $row['product_sku']);
+        self::assertSame('SELLER-SKU', $row['seller_sku']);
     }
 
     public function testOfferWithoutVariantSkuIsSkipped(): void

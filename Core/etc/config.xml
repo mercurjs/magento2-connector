@@ -23,6 +23,7 @@
             <offers>
                 <best_offer_rule>lowest_total_price</best_offer_rule>
                 <operator_label>Sold by us</operator_label>
+                <identifier_attributes/>
             </offers>
             <checkout>
                 <shipping_prices_include_tax>0</shipping_prices_include_tax>
@@ -30,6 +31,7 @@
             </checkout>
             <order>
                 <auto_create_statuses>pending,processing</auto_create_statuses>
+                <lock_seller_shipping>1</lock_seller_shipping>
             </order>
             <webhook>
                 <secret backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>

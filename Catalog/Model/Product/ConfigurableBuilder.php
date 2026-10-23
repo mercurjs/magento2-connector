@@ -10,8 +10,14 @@ use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\ConfigurableProduct\Helper\Product\Options\Factory as OptionsFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Catalog\Api\Data\EavAttributeInterface;
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Catalog\Model\Product\Image\GalleryPlan;
+use Mercur\Catalog\Model\Product\Image\GalleryWriter;
+use Mercur\Catalog\Model\Taxonomy\AttributePuller;
 
 /**
  * Groups the simple products of one Mercur product under a configurable
@@ -27,24 +33,53 @@ class ConfigurableBuilder
         private readonly ProductAttributeRepositoryInterface $attributes,
         private readonly Configurable $configurableType,
         private readonly OptionsFactory $optionsFactory,
-        private readonly CatalogConfig $config
+        private readonly CatalogConfig $config,
+        private readonly AttributePuller $puller,
+        private readonly GalleryWriter $gallery
     ) {
     }
 
     /**
-     * @param string[] $axisHandles
-     * @return string[] attribute codes that can configure the parent, empty when one cannot
+     * The attribute codes that can configure the parent. An axis without a
+     * Magento attribute gets one created; an attribute Magento cannot
+     * configure on leaves the variants as standalone products.
+     *
+     * @param array<int, array> $axes axis attribute entries of the Mercur product
+     * @return string[] empty when the product cannot become a configurable
      */
-    public function usableAxes(array $axisHandles): array
+    public function usableAxes(array $axes, ImportResult $result): array
     {
         $codes = [];
-        foreach ($axisHandles as $handle) {
+        foreach ($axes as $axis) {
+            $handle = (string) $axis['handle'];
             try {
                 $attribute = $this->attributes->get($handle);
             } catch (NoSuchEntityException) {
-                return [];
+                try {
+                    $attribute = $this->puller->pull($axis);
+                } catch (LocalizedException $e) {
+                    $result->warn(sprintf(
+                        'cannot create Magento attribute "%s" for the variant axis: %s; variants imported as standalone products',
+                        $handle,
+                        $e->getMessage()
+                    ));
+
+                    return [];
+                }
+                $result->note(sprintf(
+                    'Created attribute "%s" (%s) in attribute group "%s" for the Mercur variant axis',
+                    $handle,
+                    $attribute->getDefaultFrontendLabel(),
+                    $this->config->getAttributeGroup()
+                ));
             }
-            if (!$this->configurableType->canUseAttribute($attribute)) {
+            if ($attribute->getFrontendInput() !== 'select' || !$this->configurableType->canUseAttribute($attribute)) {
+                $result->warn(sprintf(
+                    'attribute "%s" cannot configure a product (%s); variants imported as standalone products',
+                    $handle,
+                    $this->unusableReason($attribute)
+                ));
+
                 return [];
             }
             $codes[] = $attribute->getAttributeCode();
@@ -53,12 +88,23 @@ class ConfigurableBuilder
         return $codes;
     }
 
+    private function unusableReason(ProductAttributeInterface $attribute): string
+    {
+        return match (true) {
+            $attribute->getFrontendInput() !== 'select' => sprintf('input "%s" is not a dropdown', $attribute->getFrontendInput()),
+            $attribute->getScope() !== EavAttributeInterface::SCOPE_GLOBAL_TEXT => 'its scope is not global',
+            !$attribute->getIsVisible() => 'it is not visible',
+            !$attribute->getIsUserDefined() => 'it is a system attribute',
+            default => 'it has no option source',
+        };
+    }
+
     /**
      * @param ProductInterface[] $children saved simple products, one per variant
      * @param string[] $axisCodes
      * @param int[] $websiteIds
      */
-    public function build(array $mercurProduct, array $children, array $axisCodes, array $websiteIds): ?string
+    public function build(array $mercurProduct, array $children, array $axisCodes, array $websiteIds, ImportResult $result): ?string
     {
         $handle = (string) ($mercurProduct['handle'] ?? $mercurProduct['id']);
         $sku = self::PARENT_SKU_PREFIX . $handle;
@@ -70,6 +116,8 @@ class ConfigurableBuilder
             foreach ($axisCodes as $code) {
                 $value = $child->getCustomAttribute($code)?->getValue();
                 if ($value === null || $value === '') {
+                    $result->warn(sprintf('variant %s has no value for "%s"; no configurable parent built', $child->getSku(), $code));
+
                     return null;
                 }
                 $values[$code][(string) $value] = true;
@@ -92,13 +140,15 @@ class ConfigurableBuilder
         }
 
         $parent = $this->find($sku) ?? $this->productFactory->create()
+            ->setStoreId(0)
             ->setSku($sku)
             ->setTypeId(Configurable::TYPE_CODE)
             ->setAttributeSetId($this->config->getAttributeSetId())
             ->setStatus($this->config->getImportedProductStatus())
-            ->setVisibility($this->config->getImportedProductVisibility())
-            ->setStockData(['use_config_manage_stock' => 1, 'is_in_stock' => 1]);
+            ->setVisibility($this->config->getImportedProductVisibility());
 
+        // The parent's own flag gates the configurable; availability comes from its children.
+        $parent->setStockData(['use_config_manage_stock' => 1, 'is_in_stock' => 1]);
         $parent->setName((string) ($mercurProduct['title'] ?? $handle));
         $parent->setWebsiteIds($websiteIds);
         $parent->setCustomAttribute('description', (string) ($mercurProduct['description'] ?? ''));
@@ -110,6 +160,9 @@ class ConfigurableBuilder
         $extension->setConfigurableProductLinks($links);
         $parent->setExtensionAttributes($extension);
 
+        if ($this->config->importImages()) {
+            $this->gallery->apply($parent, GalleryPlan::urlsFor($mercurProduct, null, false), (string) $parent->getName(), $result);
+        }
         $this->products->save($parent);
 
         return $sku;
@@ -118,7 +171,7 @@ class ConfigurableBuilder
     private function find(string $sku): ?ProductInterface
     {
         try {
-            return $this->products->get($sku, true);
+            return $this->products->get($sku, true, 0);
         } catch (NoSuchEntityException) {
             return null;
         }

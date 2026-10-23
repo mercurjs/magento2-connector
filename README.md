@@ -21,6 +21,8 @@
 | Features | Status |
 | --- | --- |
 | Seller offers next to your own stock, with a buy box | ✔ |
+| Offers and seller products matched to your products by EAN, UPC or GTIN when the SKUs differ | ✔ |
+| Seller product images imported into the media gallery and kept in step with Mercur | ✔ |
 | Prices per website from its Mercur region, with price list strike-through and quantity tiers | ✔ |
 | Seller-only SKUs stay buyable when you are out of stock | ✔ |
 | "Sold by" on every cart, checkout, order, email and PDF line | ✔ |
@@ -54,7 +56,7 @@ Yes. Your own products sell exactly as before, with your prices, your stock and 
 
 ### How does an order flow?
 
-Seller lines are priced by the seller and stay out of Magento's cart price rules: a rule never discounts them, and subtotal or quantity conditions only count your own lines. Each seller's shipping is taxed with the shipping tax class. The order is placed in Magento first; once it is committed in one of the configured statuses (Stores > Configuration > Mercur > Orders, `pending` and `processing` by default) it is created in Mercur with the payment authorized. The capture is confirmed to Mercur when an invoice is paid, so seller payouts only follow money that was actually collected; a cancellation before that releases the authorization. Orders that could not be sent or captured are retried on the order retry schedule, and the admin order view offers Send, Capture and Resync buttons for the rest.
+Seller lines are priced by the seller and stay out of Magento's cart price rules: a rule never discounts them, and subtotal or quantity conditions only count your own lines. Each seller's shipping is taxed with the shipping tax class. The order is placed in Magento first; once it is committed in one of the configured statuses (Stores > Configuration > Mercur > Orders, `pending` and `processing` by default) it is created in Mercur with the payment authorized. The capture is confirmed to Mercur when an invoice is paid, so seller payouts only follow money that was actually collected; a cancellation before that releases the authorization. Orders that could not be sent or captured are retried on the order retry schedule, and the admin order view offers Send, Capture and Resync buttons for the rest. Seller lines are shipped by their sellers: by default they cannot be shipped from the Magento admin or the REST ship endpoint (Stores > Configuration > Mercur > Orders > Leave seller lines to the sellers), and the order stays in Processing until the connector has recorded a shipment for each fulfillment Mercur reports.
 
 ### What is not supported yet?
 
@@ -119,7 +121,12 @@ Every setting lives under **Stores > Configuration > Mercur > Marketplace**. The
 | API log level | `mercur/general/log_level` | default, website, store view |
 | Best offer rule | `mercur/offers/best_offer_rule` | default, website |
 | Label for your own stock | `mercur/offers/operator_label` | default, website, store view |
+| Identifier attributes | `mercur/offers/identifier_attributes` | default |
 | Delivery estimates | `mercur/delivery/*` | default, website |
+| Create in Mercur when the order status is | `mercur/order/auto_create_statuses` | default, website, store view |
+| Leave seller lines to the sellers | `mercur/order/lock_seller_shipping` | default, website, store view |
+| Catalog import: attribute set and group, status, visibility, websites | `mercur/catalog/*` | default |
+| Import product images, maximum size, download timeout | `mercur/catalog/{import_images,image_max_size_mb,image_timeout_sec}` | default |
 | Webhook signing secret, maximum event age | `mercur/webhook/{secret,max_age_sec}` | default |
 | Sync schedules | `mercur/sync/*_cron` | default |
 | Page size | `mercur/sync/page_size` | default, website |

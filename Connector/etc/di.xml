@@ -139,6 +139,15 @@
             <argument name="logger" xsi:type="object">Mercur\Core\Logger\Logger</argument>
         </arguments>
     </type>
+    <type name="Magento\Sales\Model\Order\Item">
+        <plugin name="mercur_lock_seller_shipping" type="Mercur\Connector\Plugin\Sales\LockSellerShipping"/>
+    </type>
+    <type name="Magento\Sales\Model\ResourceModel\Order\Handler\State">
+        <plugin name="mercur_lift_shipment_lock" type="Mercur\Connector\Plugin\Sales\LiftShipmentLockForStateHandler"/>
+    </type>
+    <type name="Magento\Sales\Model\Order\OrderStateResolverInterface">
+        <plugin name="mercur_lift_shipment_lock" type="Mercur\Connector\Plugin\Sales\LiftShipmentLockForStateResolver"/>
+    </type>
     <type name="Magento\Quote\Model\Quote\Item\CartItemOptionsProcessor">
         <plugin name="mercur_add_offer_to_rest_buy_request" type="Mercur\Connector\Plugin\AddOfferToRestBuyRequest"/>
     </type>

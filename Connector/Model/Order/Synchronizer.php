@@ -61,13 +61,23 @@ class Synchronizer
         $order->setData('mercur_shipping_methods', $this->json->serialize($this->shippingBySeller($order, $cart)));
         $order->addCommentToStatusHistory(__('Marketplace order group %1 created in Mercur.', $group['display_id'] ?? $group['id']));
 
-        $bySeller = [];
-        foreach ($group['orders'] ?? [] as $child) {
-            $sellerId = $child['seller_id'] ?? ($child['seller']['id'] ?? null);
-            if ($sellerId) {
-                $bySeller[(string) $sellerId] = (string) $child['id'];
+        $children = $group['orders'] ?? [];
+        if ($children === []) {
+            try {
+                $children = $this->admin->getOrderGroup((string) $group['id'])['orders'] ?? [];
+            } catch (\Throwable $e) {
+                $this->logger->warning('Could not read the orders of a Mercur order group', ['group' => $group['id'], 'exception' => $e]);
             }
         }
+        $bySeller = SellerOrderMap::build($children, function (string $orderId): ?string {
+            try {
+                return $this->admin->getOrder($orderId, 'id,+seller.id')['seller']['id'] ?? null;
+            } catch (\Throwable $e) {
+                $this->logger->warning('Could not read the seller of a Mercur order', ['order' => $orderId, 'exception' => $e]);
+
+                return null;
+            }
+        });
 
         foreach ($items as $item) {
             $sellerId = (string) $item->getData('mercur_seller_id');

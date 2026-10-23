@@ -14,6 +14,7 @@ use Magento\Sales\Api\ShipOrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\ResourceModel\Order\Shipment\CollectionFactory as ShipmentCollectionFactory;
 use Mercur\Connector\Model\Order\SellerOrderLocator;
+use Mercur\Connector\Model\Order\ShipmentLock;
 use Mercur\Connector\Model\Order\Synchronizer;
 use Mercur\Core\Model\Api\AdminApi;
 use Psr\Log\LoggerInterface;
@@ -42,7 +43,8 @@ class FulfillmentSync
         private readonly ShipmentCollectionFactory $shipmentCollection,
         private readonly OrderRepositoryInterface $orders,
         private readonly ManagerInterface $events,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly ShipmentLock $lock
     ) {
     }
 
@@ -83,9 +85,11 @@ class FulfillmentSync
         $this->orders->save($order);
 
         $plans = $this->planner->plan($remote, $lineToItemId, $qtyToShip, $this->shippedFulfillments($order));
-        foreach ($plans as $plan) {
-            $this->createShipment($order, $plan);
-        }
+        $this->lock->lift(function () use ($order, $plans): void {
+            foreach ($plans as $plan) {
+                $this->createShipment($order, $plan);
+            }
+        });
         $this->events->dispatch('mercur_fulfillment_synced', [
             'order' => $order,
             'seller_order_id' => $sellerOrderId,
