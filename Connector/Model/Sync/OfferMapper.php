@@ -13,9 +13,12 @@ class OfferMapper
     {
     }
 
-    public function map(array $offer): ?array
+    /**
+     * @param string|null $productSku the Magento SKU the offer resolves to, when it differs from the variant SKU
+     */
+    public function map(array $offer, ?string $productSku = null): ?array
     {
-        $sku = $offer['product_variant']['sku'] ?? null;
+        $sku = $productSku ?? ($offer['product_variant']['sku'] ?? null);
         if (!$sku) {
             return null;
         }

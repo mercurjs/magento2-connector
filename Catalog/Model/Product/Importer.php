@@ -12,6 +12,8 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Connector\Model\Catalog\Identifier;
+use Mercur\Connector\Model\Catalog\ProductMatcher;
 use Mercur\Core\Model\Scope\WebsiteScope;
 
 /**
@@ -30,7 +32,8 @@ class Importer
         private readonly ConfigurableAxes $axes,
         private readonly ConfigurableBuilder $configurable,
         private readonly WebsiteScope $websiteScope,
-        private readonly StoreManagerInterface $storeManager
+        private readonly StoreManagerInterface $storeManager,
+        private readonly ProductMatcher $matcher
     ) {
     }
 
@@ -47,10 +50,21 @@ class Importer
         $asChildren = $axisCodes !== [];
         $websiteIds = $this->websiteIds();
 
+        $variants = $mercurProduct['variants'] ?? [];
+        $this->matcher->prime(array_map(static fn (array $variant) => [
+            'sku' => $variant['sku'] ?? null,
+            'identifiers' => Identifier::fromVariant($variant),
+        ], $variants));
+
         $children = [];
-        foreach ($mercurProduct['variants'] ?? [] as $variant) {
+        foreach ($variants as $variant) {
             $sku = (string) ($variant['sku'] ?? '');
             if ($sku === '') {
+                continue;
+            }
+            $target = $this->matcher->resolve($sku, Identifier::fromVariant($variant));
+            if ($target !== null && $target !== $sku) {
+                $result->note(sprintf('Variant %s matches your product %s by identifier; not imported', $sku, $target));
                 continue;
             }
             $product = $this->find($sku);

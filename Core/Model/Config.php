@@ -20,6 +20,7 @@ class Config
     private const PATH_TIMEOUT = 'mercur/general/timeout';
     private const PATH_BEST_OFFER_RULE = 'mercur/offers/best_offer_rule';
     private const PATH_OPERATOR_LABEL = 'mercur/offers/operator_label';
+    private const PATH_IDENTIFIER_ATTRIBUTES = 'mercur/offers/identifier_attributes';
     private const PATH_WEBHOOK_SECRET = 'mercur/webhook/secret';
     private const PATH_PAGE_SIZE = 'mercur/sync/page_size';
     private const PATH_DELIVERY_ENABLED = 'mercur/delivery/enabled';
@@ -194,6 +195,16 @@ class Config
     public function getAutoCreateStatuses(?int $storeId = null): array
     {
         $raw = (string) $this->scopeConfig->getValue(self::PATH_AUTO_CREATE_STATUSES, ScopeInterface::SCOPE_STORE, $storeId);
+
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    /**
+     * @return string[] product attribute codes that hold an EAN, UPC or GTIN
+     */
+    public function getIdentifierAttributes(): array
+    {
+        $raw = (string) $this->scopeConfig->getValue(self::PATH_IDENTIFIER_ATTRIBUTES);
 
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }

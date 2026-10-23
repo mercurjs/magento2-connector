@@ -18,10 +18,12 @@ class AdminApi
     public const OFFER_FIELDS = '+inventory_items.location_levels.stocked_quantity,'
         . '+inventory_items.location_levels.reserved_quantity,'
         . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
-        . '+seller.default_leadtime_to_ship,+product_variant.product_id';
+        . '+seller.default_leadtime_to_ship,+product_variant.product_id,'
+        . '+product_variant.ean,+product_variant.upc,+product_variant.barcode';
 
     /** Variant option values are not in Mercur's default product fields; the axis values come from them. */
-    public const PRODUCT_FIELDS = '+variants.options.value,+variants.options.option.title';
+    public const PRODUCT_FIELDS = '+variants.options.value,+variants.options.option.title,'
+        . '+variants.ean,+variants.upc,+variants.barcode';
 
     public function __construct(
         private readonly Client $client,

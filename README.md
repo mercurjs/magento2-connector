@@ -21,6 +21,7 @@
 | Features | Status |
 | --- | --- |
 | Seller offers next to your own stock, with a buy box | ✔ |
+| Offers and seller products matched to your products by EAN, UPC or GTIN when the SKUs differ | ✔ |
 | Prices per website from its Mercur region, with price list strike-through and quantity tiers | ✔ |
 | Seller-only SKUs stay buyable when you are out of stock | ✔ |
 | "Sold by" on every cart, checkout, order, email and PDF line | ✔ |
@@ -119,6 +120,7 @@ Every setting lives under **Stores > Configuration > Mercur > Marketplace**. The
 | API log level | `mercur/general/log_level` | default, website, store view |
 | Best offer rule | `mercur/offers/best_offer_rule` | default, website |
 | Label for your own stock | `mercur/offers/operator_label` | default, website, store view |
+| Identifier attributes | `mercur/offers/identifier_attributes` | default |
 | Delivery estimates | `mercur/delivery/*` | default, website |
 | Create in Mercur when the order status is | `mercur/order/auto_create_statuses` | default, website, store view |
 | Leave seller lines to the sellers | `mercur/order/lock_seller_shipping` | default, website, store view |

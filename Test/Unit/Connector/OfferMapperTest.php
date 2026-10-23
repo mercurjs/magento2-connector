@@ -87,6 +87,14 @@ final class OfferMapperTest extends TestCase
         ]]))['active']);
     }
 
+    public function testAResolvedProductSkuOverridesTheVariantSku(): void
+    {
+        $row = (new OfferMapper(new SellerMapper()))->map($this->offer(), 'OPERATOR-SKU');
+
+        self::assertSame('OPERATOR-SKU', $row['product_sku']);
+        self::assertSame('SELLER-SKU', $row['seller_sku']);
+    }
+
     public function testOfferWithoutVariantSkuIsSkipped(): void
     {
         self::assertNull((new OfferMapper(new SellerMapper()))->map($this->offer(['product_variant' => ['sku' => null]])));
