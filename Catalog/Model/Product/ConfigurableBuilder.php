@@ -142,9 +142,10 @@ class ConfigurableBuilder
             ->setTypeId(Configurable::TYPE_CODE)
             ->setAttributeSetId($this->config->getAttributeSetId())
             ->setStatus($this->config->getImportedProductStatus())
-            ->setVisibility($this->config->getImportedProductVisibility())
-            ->setStockData(['use_config_manage_stock' => 1, 'is_in_stock' => 1]);
+            ->setVisibility($this->config->getImportedProductVisibility());
 
+        // The parent's own flag gates the configurable; availability comes from its children.
+        $parent->setStockData(['use_config_manage_stock' => 1, 'is_in_stock' => 1]);
         $parent->setName((string) ($mercurProduct['title'] ?? $handle));
         $parent->setWebsiteIds($websiteIds);
         $parent->setCustomAttribute('description', (string) ($mercurProduct['description'] ?? ''));
