@@ -34,6 +34,30 @@ class View extends Template
         return $process;
     }
 
+    /**
+     * Phrase objects cannot be array keys, so the labels are rendered here.
+     *
+     * @return array<string, string> label => value
+     */
+    public function getRows(): array
+    {
+        $process = $this->getProcess();
+        $duration = $process->getData('duration');
+
+        return [
+            (string) __('Task') => $process->getCode(),
+            (string) __('Name') => (string) $process->getData('name'),
+            (string) __('Status') => $this->getStatusLabel($process->getStatus()),
+            (string) __('Attempts') => $process->getAttempts() . ' / ' . $process->getMaxAttempts(),
+            (string) __('Created') => $this->formatStamp($process->getData('created_at')),
+            (string) __('Started') => $this->formatStamp($process->getData('started_at')),
+            (string) __('Finished') => $this->formatStamp($process->getData('finished_at')),
+            (string) __('Next run') => $this->formatStamp($process->getData('next_run_at')),
+            (string) __('Duration') => $duration !== null ? $duration . ' s' : '—',
+            (string) __('Runner') => (string) ($process->getData('locked_by') ?: '—'),
+        ];
+    }
+
     public function getStatusLabel(string $status): string
     {
         $label = Status::labels()[$status] ?? null;
