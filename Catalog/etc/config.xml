@@ -8,6 +8,9 @@
                 <import_products>1</import_products>
                 <imported_product_status>1</imported_product_status>
                 <imported_product_visibility>4</imported_product_visibility>
+                <import_images>1</import_images>
+                <image_max_size_mb>10</image_max_size_mb>
+                <image_timeout_sec>20</image_timeout_sec>
             </catalog>
         </mercur>
     </default>

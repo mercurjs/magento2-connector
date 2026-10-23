@@ -46,4 +46,19 @@ class CatalogConfig
     {
         return (int) $this->scopeConfig->getValue('mercur/catalog/imported_product_visibility') ?: 4;
     }
+
+    public function importImages(): bool
+    {
+        return $this->scopeConfig->isSetFlag('mercur/catalog/import_images');
+    }
+
+    public function getImageMaxBytes(): int
+    {
+        return max(1, (int) $this->scopeConfig->getValue('mercur/catalog/image_max_size_mb') ?: 10) * 1024 * 1024;
+    }
+
+    public function getImageTimeoutSec(): int
+    {
+        return max(1, (int) $this->scopeConfig->getValue('mercur/catalog/image_timeout_sec') ?: 20);
+    }
 }

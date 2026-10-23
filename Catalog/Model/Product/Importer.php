@@ -12,6 +12,8 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Catalog\Model\Product\Image\GalleryPlan;
+use Mercur\Catalog\Model\Product\Image\GalleryWriter;
 use Mercur\Connector\Model\Catalog\Identifier;
 use Mercur\Connector\Model\Catalog\ProductMatcher;
 use Mercur\Core\Model\Scope\WebsiteScope;
@@ -33,7 +35,8 @@ class Importer
         private readonly ConfigurableBuilder $configurable,
         private readonly WebsiteScope $websiteScope,
         private readonly StoreManagerInterface $storeManager,
-        private readonly ProductMatcher $matcher
+        private readonly ProductMatcher $matcher,
+        private readonly GalleryWriter $gallery
     ) {
     }
 
@@ -104,6 +107,9 @@ class Importer
                 $product->setCustomAttribute('mercur_thumbnail', (string) $mercurProduct['thumbnail']);
             }
             $this->attributes->apply($product, $mercurProduct['attributes'] ?? [], $variant);
+            if ($this->config->importImages()) {
+                $this->gallery->apply($product, GalleryPlan::urlsFor($mercurProduct, $variant, $asChildren), (string) $product->getName(), $result);
+            }
             $children[] = $this->products->save($product);
             $result->addSku($sku);
         }

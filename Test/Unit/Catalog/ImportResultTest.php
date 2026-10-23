@@ -21,6 +21,17 @@ final class ImportResultTest extends TestCase
         ], $result->lines());
     }
 
+    public function testCountsAttachedAndSkippedImages(): void
+    {
+        $result = new ImportResult('P (prod_1)');
+        $result->countImage(true);
+        $result->countImage(true);
+        $result->countImage(false);
+
+        self::assertSame(2, $result->imagesAttached());
+        self::assertSame(1, $result->imagesSkipped());
+    }
+
     public function testCountsVariantsAndParentsSeparately(): void
     {
         $result = new ImportResult('P (prod_1)');

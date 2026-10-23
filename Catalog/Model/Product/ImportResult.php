@@ -19,6 +19,10 @@ final class ImportResult
     /** @var string[] */
     private array $lines = [];
 
+    private int $imagesAttached = 0;
+
+    private int $imagesSkipped = 0;
+
     public function __construct(private readonly string $label)
     {
     }
@@ -30,6 +34,25 @@ final class ImportResult
         } else {
             $this->variantSkus[] = $sku;
         }
+    }
+
+    public function countImage(bool $attached): void
+    {
+        if ($attached) {
+            $this->imagesAttached++;
+        } else {
+            $this->imagesSkipped++;
+        }
+    }
+
+    public function imagesAttached(): int
+    {
+        return $this->imagesAttached;
+    }
+
+    public function imagesSkipped(): int
+    {
+        return $this->imagesSkipped;
     }
 
     public function warn(string $message): void

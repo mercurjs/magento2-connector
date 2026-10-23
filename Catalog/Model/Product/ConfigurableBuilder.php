@@ -15,6 +15,8 @@ use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Mercur\Catalog\Model\CatalogConfig;
+use Mercur\Catalog\Model\Product\Image\GalleryPlan;
+use Mercur\Catalog\Model\Product\Image\GalleryWriter;
 use Mercur\Catalog\Model\Taxonomy\AttributePuller;
 
 /**
@@ -32,7 +34,8 @@ class ConfigurableBuilder
         private readonly Configurable $configurableType,
         private readonly OptionsFactory $optionsFactory,
         private readonly CatalogConfig $config,
-        private readonly AttributePuller $puller
+        private readonly AttributePuller $puller,
+        private readonly GalleryWriter $gallery
     ) {
     }
 
@@ -157,6 +160,9 @@ class ConfigurableBuilder
         $extension->setConfigurableProductLinks($links);
         $parent->setExtensionAttributes($extension);
 
+        if ($this->config->importImages()) {
+            $this->gallery->apply($parent, GalleryPlan::urlsFor($mercurProduct, null, false), (string) $parent->getName(), $result);
+        }
         $this->products->save($parent);
 
         return $sku;

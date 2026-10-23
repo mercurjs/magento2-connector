@@ -22,6 +22,7 @@
 | --- | --- |
 | Seller offers next to your own stock, with a buy box | ✔ |
 | Offers and seller products matched to your products by EAN, UPC or GTIN when the SKUs differ | ✔ |
+| Seller product images imported into the media gallery and kept in step with Mercur | ✔ |
 | Prices per website from its Mercur region, with price list strike-through and quantity tiers | ✔ |
 | Seller-only SKUs stay buyable when you are out of stock | ✔ |
 | "Sold by" on every cart, checkout, order, email and PDF line | ✔ |
@@ -124,6 +125,8 @@ Every setting lives under **Stores > Configuration > Mercur > Marketplace**. The
 | Delivery estimates | `mercur/delivery/*` | default, website |
 | Create in Mercur when the order status is | `mercur/order/auto_create_statuses` | default, website, store view |
 | Leave seller lines to the sellers | `mercur/order/lock_seller_shipping` | default, website, store view |
+| Catalog import: attribute set and group, status, visibility, websites | `mercur/catalog/*` | default |
+| Import product images, maximum size, download timeout | `mercur/catalog/{import_images,image_max_size_mb,image_timeout_sec}` | default |
 | Webhook signing secret, maximum event age | `mercur/webhook/{secret,max_age_sec}` | default |
 | Sync schedules | `mercur/sync/*_cron` | default |
 | Page size | `mercur/sync/page_size` | default, website |

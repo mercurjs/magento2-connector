@@ -23,7 +23,7 @@ class AdminApi
 
     /** Variant option values are not in Mercur's default product fields; the axis values come from them. */
     public const PRODUCT_FIELDS = '+variants.options.value,+variants.options.option.title,'
-        . '+variants.ean,+variants.upc,+variants.barcode';
+        . '+variants.ean,+variants.upc,+variants.barcode,+variants.thumbnail,+images.url,+images.rank';
 
     public function __construct(
         private readonly Client $client,

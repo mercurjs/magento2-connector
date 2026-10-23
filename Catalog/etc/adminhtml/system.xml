@@ -30,6 +30,19 @@
                     <can_be_empty>1</can_be_empty>
                     <comment>Leave empty to use every website where the connector is enabled with a Mercur region.</comment>
                 </field>
+                <field id="import_images" translate="label comment" type="select" sortOrder="70" showInDefault="1">
+                    <label>Import product images</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Downloads the Mercur product images into the media gallery of imported products. Images are matched by their source URL, so a re-run adds new ones, drops withdrawn ones and leaves images added in Magento alone.</comment>
+                </field>
+                <field id="image_max_size_mb" translate="label" type="text" sortOrder="80" showInDefault="1">
+                    <label>Maximum image size (MB)</label>
+                    <validate>validate-digits</validate>
+                </field>
+                <field id="image_timeout_sec" translate="label" type="text" sortOrder="90" showInDefault="1">
+                    <label>Image download timeout (seconds)</label>
+                    <validate>validate-digits</validate>
+                </field>
             </group>
         </section>
     </system>
