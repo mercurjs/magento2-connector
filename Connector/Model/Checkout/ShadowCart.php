@@ -66,7 +66,8 @@ class ShadowCart
             $cart = $this->api->createCart(
                 $this->config->getRegionId($storeId),
                 $this->config->getSalesChannelId($storeId),
-                (string) $quote->getBaseCurrencyCode(),
+                // A quote that has not been saved yet has no base currency; the store's is the same one.
+                (string) ($quote->getBaseCurrencyCode() ?: $quote->getStore()->getBaseCurrencyCode()),
                 ['channel' => $this->config->getChannel($storeId), 'magento_quote_id' => (string) $quote->getId()],
                 $storeId
             );
