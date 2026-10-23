@@ -33,6 +33,11 @@ class Enqueue
         $this->enqueue('products');
     }
 
+    public function productPush(): void
+    {
+        $this->enqueue('product_push');
+    }
+
     public function refunds(): void
     {
         $this->enqueue('refunds');

@@ -155,6 +155,9 @@
                 <field id="products_cron" translate="label" type="text" sortOrder="30" showInDefault="1">
                     <label>Published products schedule (cron)</label>
                 </field>
+                <field id="product_push_cron" translate="label" type="text" sortOrder="35" showInDefault="1">
+                    <label>Operator product push schedule (cron)</label>
+                </field>
                 <field id="full_cron" translate="label" type="text" sortOrder="40" showInDefault="1">
                     <label>Full resync schedule (cron)</label>
                 </field>

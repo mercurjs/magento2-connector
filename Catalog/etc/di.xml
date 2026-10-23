@@ -5,6 +5,7 @@
             <argument name="tasks" xsi:type="array">
                 <item name="products" xsi:type="object">Mercur\Catalog\Model\Task\ProductSync</item>
                 <item name="taxonomy" xsi:type="object">Mercur\Catalog\Model\Task\TaxonomyPush</item>
+                <item name="product_push" xsi:type="object">Mercur\Catalog\Model\Task\ProductPush</item>
             </argument>
         </arguments>
     </type>
@@ -12,6 +13,7 @@
         <arguments>
             <argument name="order" xsi:type="array">
                 <item name="taxonomy" xsi:type="string">taxonomy</item>
+                <item name="product_push" xsi:type="string">product_push</item>
                 <item name="products" xsi:type="string">products</item>
             </argument>
         </arguments>

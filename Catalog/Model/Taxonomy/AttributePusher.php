@@ -30,25 +30,42 @@ class AttributePusher
 
     public function pushAll(callable $log): int
     {
-        $groupId = $this->group->find();
-        if ($groupId === null) {
+        $codes = $this->groupAttributeCodes();
+        if ($codes === null) {
             $log('No attribute group named ' . $this->config->getAttributeGroup() . ' in the configured attribute set');
 
             return 0;
         }
 
-        $collection = $this->attributes->create();
-        $collection->setAttributeGroupFilter($groupId);
-
         $count = 0;
-        foreach ($collection as $row) {
-            $attribute = $this->attributeRepository->get((string) $row->getAttributeCode());
-            $this->push($attribute);
+        foreach ($codes as $code) {
+            $this->push($this->attributeRepository->get($code));
             $count++;
         }
         $log("Pushed $count attribute(s)");
 
         return $count;
+    }
+
+    /**
+     * @return string[]|null codes of the attributes in the marketplace group, null when the group is missing
+     */
+    public function groupAttributeCodes(): ?array
+    {
+        $groupId = $this->group->find();
+        if ($groupId === null) {
+            return null;
+        }
+
+        $collection = $this->attributes->create();
+        $collection->setAttributeGroupFilter($groupId);
+
+        $codes = [];
+        foreach ($collection as $row) {
+            $codes[] = (string) $row->getAttributeCode();
+        }
+
+        return $codes;
     }
 
     public function push(Attribute $attribute): ?string

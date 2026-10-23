@@ -68,6 +68,50 @@ class AdminApi
         ], $this->client->adminHeaders());
     }
 
+    /**
+     * The product with a variant of exactly this SKU. Searched with `q`, which
+     * matches variant SKUs loosely, because the `sku` filter of the admin
+     * product list is not mapped to variants and fails.
+     */
+    public function findProductBySku(string $sku): ?array
+    {
+        $result = $this->client->get('/admin/products', ['q' => $sku, 'limit' => 20], $this->client->adminHeaders());
+        foreach ($result['products'] ?? [] as $product) {
+            foreach ($product['variants'] ?? [] as $variant) {
+                if (($variant['sku'] ?? null) === $sku) {
+                    return $product;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function createProduct(array $payload): array
+    {
+        return $this->client->post('/admin/products', $payload, $this->client->adminHeaders())['product'] ?? [];
+    }
+
+    public function updateProduct(string $id, array $payload): array
+    {
+        return $this->client->post('/admin/products/' . $id, $payload, $this->client->adminHeaders())['product'] ?? [];
+    }
+
+    public function createProductVariant(string $productId, array $payload): array
+    {
+        return $this->client->post('/admin/products/' . $productId . '/variants', $payload, $this->client->adminHeaders())['product'] ?? [];
+    }
+
+    public function updateProductVariant(string $productId, string $variantId, array $payload): array
+    {
+        return $this->client->post('/admin/products/' . $productId . '/variants/' . $variantId, $payload, $this->client->adminHeaders())['product'] ?? [];
+    }
+
+    public function batchProductAttributes(string $productId, array $payload): array
+    {
+        return $this->client->post('/admin/products/' . $productId . '/attributes/batch', $payload, $this->client->adminHeaders());
+    }
+
     public function findCategoryByHandle(string $handle): ?array
     {
         $result = $this->client->get('/admin/product-categories', ['handle' => $handle, 'limit' => 1], $this->client->adminHeaders());
@@ -104,7 +148,7 @@ class AdminApi
 
     public function createAttributeValue(string $attributeId, array $payload): array
     {
-        return $this->client->post('/admin/product-attributes/' . $attributeId . '/values', $payload, $this->client->adminHeaders());
+        return $this->client->post('/admin/product-attributes/' . $attributeId . '/values', ['values' => [$payload]], $this->client->adminHeaders());
     }
 
     /**
