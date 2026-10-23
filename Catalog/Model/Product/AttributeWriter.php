@@ -31,7 +31,7 @@ class AttributeWriter
             $handle = (string) ($attribute['handle'] ?? '');
             $values = array_map(static fn ($v) => (string) $v['name'], $attribute['values'] ?? []);
             if (!empty($attribute['is_variant_axis'])) {
-                $values = $this->variantValues($attribute, $variant) ?: $values;
+                $values = VariantAxisValues::forVariant($attribute, $variant) ?: $values;
             }
 
             if (!empty($attribute['is_scoped']) || $handle === '') {
@@ -60,24 +60,6 @@ class AttributeWriter
         }
 
         $product->setCustomAttribute('mercur_scoped_attributes', $scoped === [] ? null : json_encode($scoped));
-    }
-
-    /**
-     * A variant axis value for this variant comes from the variant's own option
-     * values, not from the product-level selection of every value.
-     */
-    private function variantValues(array $attribute, array $variant): array
-    {
-        $name = strtolower((string) ($attribute['name'] ?? ''));
-        $result = [];
-        foreach ($variant['options'] ?? [] as $option) {
-            $optionName = strtolower((string) ($option['option']['title'] ?? $option['option_title'] ?? ''));
-            if ($optionName === $name && isset($option['value'])) {
-                $result[] = (string) $option['value'];
-            }
-        }
-
-        return $result;
     }
 
     private function optionId(string $attributeCode, string $label): ?string

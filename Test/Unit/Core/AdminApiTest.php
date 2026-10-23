@@ -42,4 +42,19 @@ final class AdminApiTest extends TestCase
 
         $this->api->listOffers('2026-01-01T00:00:00Z', 0);
     }
+
+    public function testPublishedProductsAreListedWithVariantOptionValues(): void
+    {
+        $this->client->expects(self::once())->method('get')
+            ->with('/admin/products', self::callback(static function (array $query): bool {
+                self::assertSame(['published'], $query['status']);
+                self::assertStringContainsString('+variants.options.value', $query['fields']);
+                self::assertStringContainsString('+variants.options.option.title', $query['fields']);
+
+                return true;
+            }))
+            ->willReturn(['products' => []]);
+
+        $this->api->listPublishedProducts(null, 0);
+    }
 }

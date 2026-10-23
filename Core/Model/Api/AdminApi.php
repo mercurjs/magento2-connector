@@ -20,6 +20,9 @@ class AdminApi
         . '+seller.is_premium,+seller.status,+seller.closed_from,+seller.closed_to,'
         . '+seller.default_leadtime_to_ship,+product_variant.product_id';
 
+    /** Variant option values are not in Mercur's default product fields; the axis values come from them. */
+    public const PRODUCT_FIELDS = '+variants.options.value,+variants.options.option.title';
+
     public function __construct(
         private readonly Client $client,
         private readonly Config $config
@@ -59,6 +62,7 @@ class AdminApi
             'order' => 'updated_at',
             'limit' => $limit ?? $this->config->getPageSize(),
             'offset' => $offset,
+            'fields' => self::PRODUCT_FIELDS,
         ], $this->client->adminHeaders());
     }
 
