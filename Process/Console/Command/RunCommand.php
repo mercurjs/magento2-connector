@@ -6,6 +6,9 @@ namespace Mercur\Process\Console\Command;
 
 use Mercur\Process\Model\Runner;
 use Mercur\Process\Model\TaskPool;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
+use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +19,8 @@ class RunCommand extends Command
 {
     public function __construct(
         private readonly Runner $runner,
-        private readonly TaskPool $tasks
+        private readonly TaskPool $tasks,
+        private readonly State $appState
     ) {
         parent::__construct();
     }
@@ -31,6 +35,8 @@ class RunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->ensureAreaCode();
+
         $code = $input->getArgument('task');
 
         if ($code === null) {
@@ -45,5 +51,17 @@ class RunCommand extends Command
         $output->writeln(sprintf('<info>%s: %s</info>', $process->getCode(), $process->getStatus()));
 
         return $process->getStatus() === 'completed' ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    /**
+     * Product saves in the import tasks need an area; run them in the same one cron uses.
+     */
+    private function ensureAreaCode(): void
+    {
+        try {
+            $this->appState->getAreaCode();
+        } catch (LocalizedException) {
+            $this->appState->setAreaCode(Area::AREA_CRONTAB);
+        }
     }
 }
