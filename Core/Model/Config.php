@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mercur\Core\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -38,7 +37,6 @@ class Config
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
-        private readonly EncryptorInterface $encryptor,
         private readonly StoreManagerInterface $storeManager
     ) {
     }
@@ -199,10 +197,12 @@ class Config
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 
+    /**
+     * The Encrypted backend model declared in config.xml makes Magento decrypt the value on read,
+     * so decrypting it again here would turn the key into garbage.
+     */
     private function decrypt(string $path, ?int $storeId = null): string
     {
-        $value = (string) $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
-
-        return $value === '' ? '' : $this->encryptor->decrypt($value);
+        return (string) $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }
