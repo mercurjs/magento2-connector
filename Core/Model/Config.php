@@ -30,6 +30,7 @@ class Config
     private const PATH_SHIPPING_PRICES_INCLUDE_TAX = 'mercur/checkout/shipping_prices_include_tax';
     private const PATH_AUTO_REMOVE_UNAVAILABLE = 'mercur/checkout/auto_remove_unavailable';
     private const PATH_AUTO_CREATE_STATUSES = 'mercur/order/auto_create_statuses';
+    private const PATH_LOCK_SELLER_SHIPPING = 'mercur/order/lock_seller_shipping';
     private const PATH_RETRIES = 'mercur/general/retries';
     private const PATH_RETRY_DELAY_MS = 'mercur/general/retry_delay_ms';
     private const PATH_LOG_LEVEL = 'mercur/general/log_level';
@@ -195,6 +196,11 @@ class Config
         $raw = (string) $this->scopeConfig->getValue(self::PATH_AUTO_CREATE_STATUSES, ScopeInterface::SCOPE_STORE, $storeId);
 
         return array_values(array_filter(array_map('trim', explode(',', $raw))));
+    }
+
+    public function lockSellerShipping(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::PATH_LOCK_SELLER_SHIPPING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

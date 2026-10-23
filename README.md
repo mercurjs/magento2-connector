@@ -54,7 +54,7 @@ Yes. Your own products sell exactly as before, with your prices, your stock and 
 
 ### How does an order flow?
 
-Seller lines are priced by the seller and stay out of Magento's cart price rules: a rule never discounts them, and subtotal or quantity conditions only count your own lines. Each seller's shipping is taxed with the shipping tax class. The order is placed in Magento first; once it is committed in one of the configured statuses (Stores > Configuration > Mercur > Orders, `pending` and `processing` by default) it is created in Mercur with the payment authorized. The capture is confirmed to Mercur when an invoice is paid, so seller payouts only follow money that was actually collected; a cancellation before that releases the authorization. Orders that could not be sent or captured are retried on the order retry schedule, and the admin order view offers Send, Capture and Resync buttons for the rest.
+Seller lines are priced by the seller and stay out of Magento's cart price rules: a rule never discounts them, and subtotal or quantity conditions only count your own lines. Each seller's shipping is taxed with the shipping tax class. The order is placed in Magento first; once it is committed in one of the configured statuses (Stores > Configuration > Mercur > Orders, `pending` and `processing` by default) it is created in Mercur with the payment authorized. The capture is confirmed to Mercur when an invoice is paid, so seller payouts only follow money that was actually collected; a cancellation before that releases the authorization. Orders that could not be sent or captured are retried on the order retry schedule, and the admin order view offers Send, Capture and Resync buttons for the rest. Seller lines are shipped by their sellers: by default they cannot be shipped from the Magento admin or the REST ship endpoint (Stores > Configuration > Mercur > Orders > Leave seller lines to the sellers), and the order stays in Processing until the connector has recorded a shipment for each fulfillment Mercur reports.
 
 ### What is not supported yet?
 
@@ -120,6 +120,8 @@ Every setting lives under **Stores > Configuration > Mercur > Marketplace**. The
 | Best offer rule | `mercur/offers/best_offer_rule` | default, website |
 | Label for your own stock | `mercur/offers/operator_label` | default, website, store view |
 | Delivery estimates | `mercur/delivery/*` | default, website |
+| Create in Mercur when the order status is | `mercur/order/auto_create_statuses` | default, website, store view |
+| Leave seller lines to the sellers | `mercur/order/lock_seller_shipping` | default, website, store view |
 | Webhook signing secret, maximum event age | `mercur/webhook/{secret,max_age_sec}` | default |
 | Sync schedules | `mercur/sync/*_cron` | default |
 | Page size | `mercur/sync/page_size` | default, website |

@@ -33,3 +33,4 @@
 "Orders","Orders"
 "Create in Mercur when the order status is","Create in Mercur when the order status is"
 "Order actions","Order actions"
+"Seller lines are shipped by their sellers. A Magento shipment is recorded for each fulfillment Mercur reports; they cannot be shipped from here.","Seller lines are shipped by their sellers. A Magento shipment is recorded for each fulfillment Mercur reports; they cannot be shipped from here."

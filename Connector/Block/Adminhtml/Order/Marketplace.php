@@ -9,6 +9,7 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Registry;
 use Magento\Sales\Model\Order;
 use Mercur\Connector\Model\Order\MarketplaceOrderView;
+use Mercur\Core\Model\Config;
 
 class Marketplace extends Template
 {
@@ -16,9 +17,17 @@ class Marketplace extends Template
         Context $context,
         private readonly Registry $registry,
         private readonly MarketplaceOrderView $view,
+        private readonly Config $config,
         array $data = []
     ) {
         parent::__construct($context, $data);
+    }
+
+    public function isShippingLocked(): bool
+    {
+        $order = $this->getOrder();
+
+        return $order !== null && $this->config->lockSellerShipping((int) $order->getStoreId());
     }
 
     public function getOrder(): ?Order

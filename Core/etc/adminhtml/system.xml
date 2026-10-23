@@ -119,6 +119,11 @@
                     <comment>The order is sent once it is committed in one of these statuses. Orders left behind are retried on the order retry schedule.</comment>
                     <can_be_empty>1</can_be_empty>
                 </field>
+                <field id="lock_seller_shipping" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Leave seller lines to the sellers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Yes keeps seller lines out of shipments created in Magento; the connector records a shipment for every fulfillment Mercur reports. Invoices, cancellations and credit memos are not affected.</comment>
+                </field>
             </group>
             <group id="webhook" translate="label" type="text" sortOrder="30" showInDefault="1">
                 <label>Webhooks</label>
