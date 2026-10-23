@@ -27,6 +27,11 @@ class CatalogConfig
         return $this->scopeConfig->isSetFlag('mercur/catalog/import_products');
     }
 
+    public function exportProducts(): bool
+    {
+        return $this->scopeConfig->isSetFlag('mercur/catalog/export_products');
+    }
+
     public function getImportedProductStatus(): int
     {
         return (int) $this->scopeConfig->getValue('mercur/catalog/imported_product_status') ?: 1;

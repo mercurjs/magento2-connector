@@ -45,6 +45,11 @@ class Importer
         $id = (string) ($mercurProduct['id'] ?? '?');
         $result = new ImportResult(sprintf('%s (%s)', (string) ($mercurProduct['title'] ?? $id), $id));
 
+        // Pushed from this Magento by ProductPush: the source product is already here.
+        if (($mercurProduct['metadata']['source'] ?? null) === ExportPayload::SOURCE) {
+            return $result;
+        }
+
         $axes = $this->axes->fromProduct($mercurProduct);
         $axisCodes = $axes === null ? [] : $this->configurable->usableAxes($axes, $result);
         if ($axes === null && $this->axes->hasInlineAxis($mercurProduct)) {

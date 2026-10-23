@@ -48,6 +48,7 @@
                 <sellers_cron>*/15 * * * *</sellers_cron>
                 <offers_cron>*/5 * * * *</offers_cron>
                 <products_cron>0 * * * *</products_cron>
+                <product_push_cron>30 * * * *</product_push_cron>
                 <full_cron>0 2 * * *</full_cron>
                 <refunds_cron>*/15 * * * *</refunds_cron>
                 <order_retry_cron>*/10 * * * *</order_retry_cron>

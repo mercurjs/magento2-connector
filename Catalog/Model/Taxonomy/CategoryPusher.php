@@ -15,7 +15,7 @@ use Mercur\Core\Model\Api\AdminApi;
  */
 class CategoryPusher
 {
-    /** @var array<int, string> magento id => mercur id, filled as the tree is walked */
+    /** @var array<int, string|null> magento id => mercur id, filled as the tree is walked */
     private array $mercurIds = [];
 
     public function __construct(
@@ -70,6 +70,21 @@ class CategoryPusher
         }
 
         return $mercurId ? (string) $mercurId : null;
+    }
+
+    /**
+     * The Mercur id of a category already pushed, found by the same handle the
+     * push gave it; null when the category has not reached Mercur yet.
+     */
+    public function findMercurId(Category $category): ?string
+    {
+        $id = (int) $category->getId();
+        if (!array_key_exists($id, $this->mercurIds)) {
+            $found = $this->api->findCategoryByHandle($this->handle($category));
+            $this->mercurIds[$id] = isset($found['id']) ? (string) $found['id'] : null;
+        }
+
+        return $this->mercurIds[$id];
     }
 
     private function lookup(?Category $parent): ?string

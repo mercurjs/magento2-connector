@@ -16,6 +16,11 @@
                     <label>Import published seller products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="export_products" translate="label comment" type="select" sortOrder="35" showInDefault="1">
+                    <label>Push operator products</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Push your own Magento products to Mercur, matched by SKU, so sellers can list offers on them. Push the taxonomy first.</comment>
+                </field>
                 <field id="imported_product_status" translate="label" type="select" sortOrder="40" showInDefault="1">
                     <label>Status of imported products</label>
                     <source_model>Magento\Catalog\Model\Product\Attribute\Source\Status</source_model>
