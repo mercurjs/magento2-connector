@@ -50,14 +50,6 @@ Yes. Your own products sell exactly as before, with your prices, your stock and 
 
 The order is placed in Magento first. Once it reaches a configured status it is created in Mercur with the payment authorized, the capture is confirmed when an invoice is paid, and each seller ships their own lines from Mercur; the Magento order completes when every seller shipment has been recorded. [ARCHITECTURE.md](ARCHITECTURE.md) has the full picture.
 
-### What is not supported yet?
-
-- Buyer and seller messaging, order incidents and seller ratings
-- Documents sellers attach to orders
-- A third-party tax engine for seller lines (Magento taxes them with the product's tax class)
-- Mercur promotions
-- Shipping one order to several addresses
-
 ## Quick start
 
 ```bash
