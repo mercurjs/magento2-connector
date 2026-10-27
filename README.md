@@ -28,7 +28,7 @@
 | Your products pushed to Mercur so sellers can offer on them | Opt-in |
 | Taxonomy push, EAN/UPC matching, Multi-Source Inventory, GraphQL and REST | GA |
 
-Watch [releases](https://github.com/mercurjs/magento2-connector/releases) to get notified of updates.
+Watch [releases](https://github.com/mercurjs/mercur/releases) to get notified of updates.
 
 ## Overview
 
