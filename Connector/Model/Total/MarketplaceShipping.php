@@ -80,7 +80,8 @@ class MarketplaceShipping extends AbstractTotal
 
     public function fetch(Quote $quote, Total $total): array
     {
-        $amount = (float) $total->getTotalAmount($this->getCode());
+        // TotalsReader rebuilds the Total from address data, so the collected amount is only there as a data key
+        $amount = (float) ($total->getTotalAmount($this->getCode()) ?: $total->getData('mercur_shipping_amount'));
         if ($amount <= 0) {
             return [];
         }

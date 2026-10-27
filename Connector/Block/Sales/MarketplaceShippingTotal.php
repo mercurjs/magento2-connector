@@ -6,6 +6,7 @@ namespace Mercur\Connector\Block\Sales;
 
 use Magento\Framework\DataObject;
 use Magento\Framework\View\Element\AbstractBlock;
+use Mercur\Connector\Model\Carrier\Marketplace;
 
 /**
  * Adds the "Seller shipping" row to order, invoice and credit memo totals,
@@ -32,6 +33,12 @@ class MarketplaceShippingTotal extends AbstractBlock
             'base_value' => (float) $source->getData('base_mercur_shipping_amount'),
             'label' => __('Seller shipping'),
         ]), 'shipping');
+
+        $order = $source->getOrder() ?: $source;
+        if ($order->getShippingMethod() === Marketplace::CODE . '_' . Marketplace::CODE
+            && (float) $source->getData('shipping_amount') <= 0) {
+            $parent->removeTotal('shipping');
+        }
 
         return $this;
     }

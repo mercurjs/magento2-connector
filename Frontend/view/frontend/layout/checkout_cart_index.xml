@@ -23,13 +23,6 @@
                     <item name="components" xsi:type="array">
                         <item name="block-totals" xsi:type="array">
                             <item name="children" xsi:type="array">
-                                <item name="mercur_shipping" xsi:type="array">
-                                    <item name="component" xsi:type="string">Mercur_Frontend/js/view/summary/marketplace-shipping</item>
-                                    <item name="sortOrder" xsi:type="string">25</item>
-                                    <item name="config" xsi:type="array">
-                                        <item name="title" xsi:type="string" translate="true">Seller shipping</item>
-                                    </item>
-                                </item>
                             </item>
                         </item>
                     </item>

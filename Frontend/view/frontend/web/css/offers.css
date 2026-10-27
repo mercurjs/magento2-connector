@@ -34,3 +34,6 @@
 .mercur-offer--hidden { display: none; }
 .mercur-offer__price-excl { color: #666; font-size: 0.9rem; }
 .mercur-listing-price .price-label { margin-right: 4px; }
+/* Only sellers ship this cart: the placeholder Magento method stays selected but is not a choice */
+.table-checkout-shipping-method tr:has(input[value="mercur_mercur"]) { display: none; }
+.table-checkout-shipping-method:has(input[value="mercur_mercur"]) thead { display: none; }
