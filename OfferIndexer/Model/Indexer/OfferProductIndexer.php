@@ -13,6 +13,7 @@ use Mercur\Connector\Model\ResourceModel\Offer\CollectionFactory as OfferCollect
 use Mercur\Core\Model\Config;
 use Mercur\Core\Model\Scope\WebsiteScope;
 use Mercur\OfferIndexer\Model\Candidate;
+use Mercur\OfferIndexer\Model\ProductCacheCleaner;
 use Mercur\OfferIndexer\Model\ResourceModel\ProductIndex;
 use Mercur\OfferIndexer\Model\ResourceModel\SkuResolver;
 use Mercur\OfferIndexer\Model\RollupCalculator;
@@ -36,14 +37,16 @@ class OfferProductIndexer
         private readonly WebsiteScope $websites,
         private readonly SkuResolver $skus,
         private readonly Configurable $configurable,
-        private readonly ResourceConnection $resource
+        private readonly ResourceConnection $resource,
+        private readonly ProductCacheCleaner $cacheCleaner
     ) {
     }
 
     public function reindexAll(): void
     {
         $this->index->truncate();
-        $this->reindexSkus($this->allOfferSkus());
+        $this->reindex($this->allOfferSkus());
+        $this->cacheCleaner->cleanAll();
     }
 
     /**
@@ -51,10 +54,21 @@ class OfferProductIndexer
      */
     public function reindexSkus(array $skus): void
     {
+        $this->cacheCleaner->cleanProducts($this->reindex($skus));
+    }
+
+    /**
+     * @param string[] $skus
+     * @return int[] ids of the products whose index rows were rewritten, configurable parents included
+     */
+    private function reindex(array $skus): array
+    {
         $skus = array_values(array_unique(array_filter(array_map('strval', $skus), 'strlen')));
         if ($skus === []) {
-            return;
+            return [];
         }
+
+        $touched = [];
 
         foreach (array_chunk($skus, self::CHUNK) as $chunk) {
             foreach ($this->websites->all() as $websiteId => $scope) {
@@ -79,23 +93,26 @@ class OfferProductIndexer
 
                 $this->index->deleteSkus($empty, $websiteId);
                 $this->index->replace($rows);
-                $this->rollUpParents($chunk, $websiteId);
+                $touched[] = $this->rollUpParents($chunk, $websiteId);
             }
         }
+
+        return array_values(array_unique(array_merge(...$touched)));
     }
 
     /**
      * @param string[] $childSkus
+     * @return int[] ids of the children and the parents rolled up from them
      */
-    private function rollUpParents(array $childSkus, int $websiteId): void
+    private function rollUpParents(array $childSkus, int $websiteId): array
     {
-        $childIds = array_values($this->skus->productIdsForSkus($childSkus));
+        $childIds = array_map('intval', array_values($this->skus->productIdsForSkus($childSkus)));
         if ($childIds === []) {
-            return;
+            return [];
         }
         $parentIds = array_map('intval', $this->configurable->getParentIdsByChild($childIds));
         if ($parentIds === []) {
-            return;
+            return $childIds;
         }
         $parentSkus = $this->skus->skusForProductIds($parentIds);
 
@@ -123,6 +140,8 @@ class OfferProductIndexer
 
         $this->index->deleteSkus($empty, $websiteId);
         $this->index->replace($rows);
+
+        return array_merge($childIds, $parentIds);
     }
 
     /**
