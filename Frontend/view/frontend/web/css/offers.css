@@ -12,17 +12,6 @@
 .mercur-offer__origin-price { color: #888; text-decoration: line-through; font-size: 0.9rem; }
 .mercur-offer__tiers { flex-basis: 100%; margin: 0; padding: 0; list-style: none; color: #555; font-size: 0.9rem; }
 .mercur-offer__estimate { color: #1f6b2f; font-size: 0.9rem; }
-.mercur-sellers { margin: 16px 0; }
-.mercur-seller-panel { border: 1px solid #e2e2e2; border-radius: 4px; padding: 12px 16px; margin-bottom: 12px; }
-.mercur-seller-panel__title { font-weight: 600; margin-bottom: 8px; }
-.mercur-seller-panel__items { list-style: none; margin: 0 0 8px; padding: 0; color: #555; }
-.mercur-seller-panel__options { border: 0; margin: 0; padding: 0; }
-.mercur-seller-panel__legend { font-size: 0.9rem; color: #666; margin-bottom: 4px; }
-.mercur-seller-option { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; cursor: pointer; }
-.mercur-seller-option__price { font-weight: 600; }
-.mercur-seller-option__estimate, .mercur-seller-panel__estimate { color: #1f6b2f; font-size: 0.9rem; }
-.mercur-seller-panel__hint { color: #666; margin: 0; }
-.mercur-seller-panel__chosen { display: flex; flex-wrap: wrap; gap: 8px; }
 .mercur-seller-page__header { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
 .mercur-seller-page__logo { width: 72px; height: 72px; object-fit: contain; border: 1px solid #e2e2e2; border-radius: 4px; }
 .mercur-seller-page__banner { width: 100%; max-height: 240px; object-fit: cover; margin-bottom: 16px; }
@@ -34,6 +23,29 @@
 .mercur-offer--hidden { display: none; }
 .mercur-offer__price-excl { color: #666; font-size: 0.9rem; }
 .mercur-listing-price .price-label { margin-right: 4px; }
+.mercur-sellers { display: grid; gap: 16px; margin: 16px 0 24px; }
+.mercur-seller-panel { border: 1px solid #e3e3e3; border-radius: 8px; padding: 20px; background: #fff; }
+.mercur-seller-panel__header { margin-bottom: 16px; }
+.mercur-seller-panel__label { color: #6b6b6b; margin-right: 4px; }
+.mercur-seller-panel__name { font-weight: 600; }
+.mercur-seller-panel__items { list-style: none; margin: 6px 0 0; padding: 0; color: #6b6b6b; font-size: 0.95em; }
+.mercur-seller-panel__items li { margin: 0; }
+.mercur-seller-panel__qty { white-space: nowrap; }
+.mercur-seller-panel__options { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+.mercur-seller-panel__legend { padding: 0; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #6b6b6b; font-size: 0.8em; }
+.mercur-seller-option { display: flex; align-items: center; gap: 12px; margin: 0; padding: 14px 16px; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer; transition: border-color .15s, background-color .15s; }
+.mercur-seller-option:hover { border-color: #9a9a9a; }
+.mercur-seller-option--selected { border-color: #1979c3; background: #f3f8fd; box-shadow: inset 0 0 0 1px #1979c3; }
+.mercur-seller-option__radio { margin: 0; flex: none; }
+.mercur-seller-option__text { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.mercur-seller-option__name { font-weight: 600; }
+.mercur-seller-option__estimate { color: #1f6b2f; font-size: 0.9em; }
+.mercur-seller-option__price { flex: none; margin-left: auto; font-weight: 600; white-space: nowrap; }
+.mercur-seller-panel__hint { color: #6b6b6b; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.mercur-seller-panel__chosen { display: flex; align-items: center; gap: 12px; }
+.mercur-sellers--readonly { gap: 12px; margin: 16px 0 0; }
+.mercur-sellers--readonly .mercur-seller-panel { padding: 14px 16px; border-radius: 6px; }
+.mercur-sellers--readonly .mercur-seller-panel__header { margin-bottom: 8px; }
 /* Only sellers ship this cart: the placeholder Magento method stays selected but is not a choice */
 .table-checkout-shipping-method tr:has(input[value="mercur_mercur"]) { display: none; }
 .table-checkout-shipping-method:has(input[value="mercur_mercur"]) thead { display: none; }

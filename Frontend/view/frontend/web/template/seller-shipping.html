@@ -1,25 +1,29 @@
-<div class="mercur-sellers" data-bind="visible: sellers().length" data-testid="mercur-seller-shipping">
+<div class="mercur-sellers" data-bind="visible: sellers().length, css: {'mercur-sellers--readonly': readonly}" data-testid="mercur-seller-shipping">
     <!-- ko foreach: { data: sellers, as: 'seller' } -->
-    <div class="mercur-seller-panel" data-bind="attr: {'data-seller-id': seller.seller_id}">
-        <div class="mercur-seller-panel__title">
-            <span data-bind="i18n: 'Sold by'"></span>
+    <section class="mercur-seller-panel" data-bind="attr: {'data-seller-id': seller.seller_id}">
+        <header class="mercur-seller-panel__header">
+            <span class="mercur-seller-panel__label" data-bind="i18n: 'Shipped by'"></span>
             <!-- ko if: seller.seller_url -->
             <a class="mercur-seller-panel__name" data-bind="attr: {href: seller.seller_url}, text: seller.seller_name"></a>
             <!-- /ko -->
             <!-- ko ifnot: seller.seller_url -->
             <strong class="mercur-seller-panel__name" data-bind="text: seller.seller_name"></strong>
             <!-- /ko -->
-        </div>
-        <ul class="mercur-seller-panel__items" data-bind="foreach: seller.items">
-            <li><span data-bind="text: name"></span> &times; <span data-bind="text: qty"></span></li>
-        </ul>
+            <ul class="mercur-seller-panel__items" data-bind="foreach: seller.items">
+                <li><span data-bind="text: name"></span> <span class="mercur-seller-panel__qty">&times;&nbsp;<!-- ko text: qty --><!-- /ko --></span></li>
+            </ul>
+        </header>
 
         <!-- ko if: $parent.readonly -->
         <!-- ko with: seller.chosenOption -->
         <div class="mercur-seller-panel__chosen">
-            <span data-bind="text: name"></span>
-            <span class="price" data-bind="text: formatted_amount"></span>
-            <span class="mercur-seller-panel__estimate" data-bind="text: estimated_delivery_label"></span>
+            <span class="mercur-seller-option__text">
+                <span class="mercur-seller-option__name" data-bind="text: name"></span>
+                <!-- ko if: estimated_delivery_label -->
+                <span class="mercur-seller-option__estimate" data-bind="text: estimated_delivery_label"></span>
+                <!-- /ko -->
+            </span>
+            <span class="mercur-seller-option__price price" data-bind="text: formatted_amount"></span>
         </div>
         <!-- /ko -->
         <!-- /ko -->
@@ -27,18 +31,21 @@
         <!-- ko ifnot: $parent.readonly -->
         <!-- ko if: seller.options.length -->
         <fieldset class="mercur-seller-panel__options">
-            <legend class="mercur-seller-panel__legend" data-bind="i18n: 'Seller shipping'"></legend>
+            <legend class="mercur-seller-panel__legend" data-bind="i18n: 'Choose a delivery option'"></legend>
             <!-- ko foreach: { data: seller.options, as: 'option' } -->
-            <label class="mercur-seller-option">
+            <label class="mercur-seller-option" data-bind="css: {'mercur-seller-option--selected': seller.chosenId() === option.id}">
                 <input type="radio"
+                       class="mercur-seller-option__radio"
                        data-bind="attr: {name: 'mercur_shipping_' + seller.seller_id, value: option.id},
                                   checked: seller.chosenId,
                                   click: $parents[1].choose.bind($parents[1], seller, option)"/>
-                <span class="mercur-seller-option__name" data-bind="text: option.name"></span>
+                <span class="mercur-seller-option__text">
+                    <span class="mercur-seller-option__name" data-bind="text: option.name"></span>
+                    <!-- ko if: option.estimated_delivery_label -->
+                    <span class="mercur-seller-option__estimate" data-bind="text: option.estimated_delivery_label"></span>
+                    <!-- /ko -->
+                </span>
                 <span class="mercur-seller-option__price price" data-bind="text: option.formatted_amount"></span>
-                <!-- ko if: option.estimated_delivery_label -->
-                <span class="mercur-seller-option__estimate" data-bind="text: option.estimated_delivery_label"></span>
-                <!-- /ko -->
             </label>
             <!-- /ko -->
         </fieldset>
@@ -47,11 +54,11 @@
         <p class="mercur-seller-panel__hint">
             <span data-bind="i18n: 'Enter your shipping address to see this seller\'s delivery options.'"></span>
             <!-- ko if: seller.estimated_delivery_label -->
-            <span class="mercur-seller-panel__estimate" data-bind="text: seller.estimated_delivery_label"></span>
+            <span class="mercur-seller-option__estimate" data-bind="text: seller.estimated_delivery_label"></span>
             <!-- /ko -->
         </p>
         <!-- /ko -->
         <!-- /ko -->
-    </div>
+    </section>
     <!-- /ko -->
 </div>
