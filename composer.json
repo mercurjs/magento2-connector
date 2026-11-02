@@ -2,7 +2,7 @@
   "name": "mercurjs/magento2-connector",
   "description": "Sell Mercur marketplace offers from a Magento 2 storefront, next to your own products.",
   "type": "magento2-component",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://mercurjs.com",
   "support": {
